@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bills &amp; Wages Ledger</title>
+<style>
+:root{--g1:#8ECDF5;--g2:#C9E8FB;--g3:#F3FAFF;--ink:#0f2a43;--mut:#4a6580;--line:rgba(56,140,200,.35);--pri:#0369a1;--pri2:#075985;--warn:#b45309;--bad:#b91c1c;--ok:#047857;--head:#bfe3f8;--soft:#dbeffc}
+*{box-sizing:border-box}
+html,body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-size:14px}
+body{background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 45%,var(--g3) 100%) fixed;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+aside{width:200px;flex-shrink:0;background:linear-gradient(180deg,#7CC4F0,#A9DBF7);border-right:1px solid rgba(40,120,180,.4);position:fixed;left:0;top:0;bottom:0;z-index:30;display:flex;flex-direction:column;padding:14px 12px;overflow-y:auto}
+.brand{display:flex;gap:10px;align-items:center;padding:6px 6px 16px}
+.mark{width:42px;height:42px;border-radius:12px;background:#075985;color:#e0f2fe;display:grid;place-items:center;font-size:22px;font-weight:900;flex:none}
+.brand b{display:block;font-size:14px;font-weight:900;letter-spacing:.04em;color:#0c3a5c;line-height:1.1}
+.brand small{display:block;letter-spacing:.32em;font-weight:700;font-size:10px;color:#075985}
+nav{display:flex;flex-direction:column;gap:4px;flex:1}
+nav button{all:unset;cursor:pointer;display:flex;gap:9px;align-items:center;padding:8px 10px;border-radius:12px;font-weight:600;font-size:13px;color:#0c3a5c}
+nav button:hover{background:rgba(255,255,255,.5)}
+nav button.on{background:#075985;color:#ffffff}
+nav button:focus-visible,.btn:focus-visible{outline:2px solid var(--pri2);outline-offset:2px}
+.sync{background:rgba(255,255,255,.5);border:1px solid rgba(40,120,180,.4);border-radius:14px;padding:12px;font-size:12px;line-height:1.5;margin-top:10px}
+.sync b.t{display:block;font-size:10px;letter-spacing:.08em;color:#075985;margin-bottom:4px}
+.sync .row{margin-top:8px}
+main{flex:1;min-width:0;margin-left:200px}
+header.top{position:sticky;top:0;z-index:20;background:rgba(142,205,245,.94);backdrop-filter:blur(6px);border-bottom:1px solid rgba(56,140,200,.5);padding:7px 14px}
+header.top small.b{display:block;font-size:10px;font-weight:900;letter-spacing:.25em;color:#075985}
+header.top h1{margin:0;font-size:17px;font-weight:900}
+header.top p{margin:2px 0 0;font-size:12px;color:var(--mut)}
+.content{padding:10px 12px 34px;max-width:none;margin:0}
+.card{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:10px}
+h2{margin:0 0 7px;font-size:15px;font-weight:800}
+h3{margin:0 0 8px;font-size:15px}
+.btn{cursor:pointer;border:1px solid #7fb8de;background:rgba(255,255,255,.8);color:var(--ink);padding:9px 14px;border-radius:12px;font-weight:700;font-size:13px;font-family:inherit;white-space:nowrap}
+.btn:hover{background:#dff1fd}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}.btn.pri:hover{background:var(--pri2)}
+.btn.sm{padding:4px 9px;font-size:12px;border-radius:9px}.btn.red{color:var(--bad)}
+label.btn{display:inline-block;text-transform:none;letter-spacing:0;margin:0;font-size:12px;padding:4px 9px;border-radius:9px;color:var(--ink)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+input,select{display:block;width:100%;margin-top:3px;font:inherit;font-size:14px;color:var(--ink);background:rgba(255,255,255,.92);border:1px solid #9cc6e4;border-radius:9px;padding:6px 9px;outline:none}
+input:focus,select:focus{box-shadow:0 0 0 2px #0284c7}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:9px}
+.sc{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#0f2a43;background:var(--head);padding:6px 8px;border:1px solid #6fa9d3;white-space:nowrap}
+.tbl td{padding:4px 8px;border:1px solid #cfe3f2;vertical-align:top}
+.tbl tbody tr:nth-child(even){background:#f4faff}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th.r{text-align:right}
+.tbl tr.gh td{background:var(--soft);font-weight:800}
+.tbl tr.vr td{font-weight:700}
+.tbl tr.br td{font-size:12px;color:#45617a;background:#f4faff}
+.tbl tr.br td:first-child{padding-left:26px}
+.tbl tr.tot td{background:var(--head);font-weight:800;border-top:2px solid #6fa9d3}
+.bad{color:var(--bad)}.ok{color:var(--ok)}.warn{color:var(--warn)}.mut{color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:10px}
+.kc{background:#eef8ff;border:1px solid #9cc6e4;border-radius:10px;padding:6px 12px}
+.kc small{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}.kc b{font-size:18px;font-weight:800}
+.rhead{font-weight:700;margin:0 0 8px;color:var(--mut)}
+.rt{font-size:17px;font-weight:900;margin:12px 0 7px;color:#0c3a5c;padding-bottom:6px;border-bottom:2px solid #6fa9d3}
+.gen{position:fixed;left:200px;right:0;bottom:0;z-index:15;margin:0;padding:5px 12px;border-top:1px solid #6fa9d3;background:rgba(207,232,250,.97);text-align:center;font-size:11.5px;color:var(--mut)}
+.empty{padding:26px;text-align:center;color:var(--mut)}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--ink);padding-bottom:9px}
+.chk input{width:auto;margin:0}
+.info{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:#eef8ff;border:1px solid #9cc6e4;font-size:13px}
+.sumbox{width:60%;margin-left:auto;margin-top:10px}
+#cl-login{position:fixed;inset:0;z-index:80;background:linear-gradient(180deg,#8ECDF5,#F3FAFF);display:flex;align-items:center;justify-content:center;padding:16px}
+#cl-login form{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:22px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px}
+#cl-login h2{margin:0 0 2px;font-size:20px}
+#rep .tbl,#cb-out .tbl{table-layout:fixed}
+#rep .tbl th,#cb-out .tbl th{white-space:normal}
+#rep .tbl td,#cb-out .tbl td{word-break:break-word}
+#rep .tbl th.r,#cb-out .tbl th.r{width:12.5%}
+#cb-out .tbl th:nth-child(1){width:8%}
+#cb-out .tbl th:nth-child(3){width:12%}
+#cb-out .tbl th:nth-child(4){width:14%}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#075985;color:#fff;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60}
+#toast.on{opacity:1}
+[hidden]{display:none!important}
+#pdfroot{width:718px;background:#fff;color:#0f2a43;font-size:10px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+#pdfroot .card{border:0;padding:0;background:#fff;margin-bottom:10px;border-radius:0}
+#pdfroot .card h2{font-size:12px}
+#pdfroot .rt{font-size:14px;margin:12px 0 8px}
+#pdfroot .rhead{margin:0 0 8px}
+#pdfroot .cards{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px}
+#pdfroot .kc{border:1px solid #6fa9d3;padding:5px 8px;background:#fff}#pdfroot .kc b{font-size:13px}
+#pdfroot .sc{overflow:visible}
+#pdfroot .tbl{font-size:9px;table-layout:fixed}
+#pdfroot .tbl th{white-space:normal;font-size:8px;padding:3px 4px}
+#pdfroot .tbl td{padding:3px 4px;word-break:break-word}
+#pdfroot .tbl th.r{width:12.5%}
+#pdfroot.cb .tbl th:nth-child(1){width:8%}
+#pdfroot.cb .tbl th:nth-child(3){width:12%}
+#pdfroot.cb .tbl th:nth-child(4){width:14%}
+#pdfroot .sumbox{width:65%}
+#pdfroot .gen{display:none}
+@media print{
+  @page{size:A4 portrait;margin:10mm 10mm 16mm}
+  html,body{background:#fff!important;font-size:10px}
+  aside,header.top,.noprint,#t-cl,#t-bills,#t-wages,#t-pay,#t-exp,#t-rc,#t-ib,#t-hd,#cl-login,#toast{display:none!important}
+  main{margin-left:0}.content{padding:0;max-width:none}
+  .card,.kc{border:0;padding:0;background:#fff}.card{margin-bottom:10px}
+  .card h2{font-size:12px}
+  .rt{font-size:14px;margin:12px 0 8px}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px}
+  .kc{border:1px solid #6fa9d3;padding:5px 8px}.kc b{font-size:13px}
+  .sc{overflow:visible}
+  .tbl{font-size:9px}
+  .tbl th{white-space:normal;font-size:8px;padding:3px 4px}
+  .tbl td{padding:3px 4px;word-break:break-word}
+  .tbl .r{white-space:nowrap}
+  .tbl tr{break-inside:avoid}
+  .sumbox{width:65%}
+  .gen{display:none!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:900px){
+  .shell{flex-direction:column}
+  aside{width:auto;position:static;flex-direction:row;padding:8px;overflow-x:auto;align-items:center;gap:8px}
+  main{margin-left:0}
+  .brand{padding:0 8px 0 0;flex:none}.brand div{display:none}.sync{display:none}
+  nav{flex-direction:row;flex:none}nav button{white-space:nowrap}
+  .content{padding:8px 8px 34px}header.top{padding:7px 10px}
+  .gen{left:0}
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside class="noprint">
+  <div class="brand"><span class="mark">₹</span><div><b>BILLS &amp; WAGES</b><small>LEDGER</small></div></div>
+  <nav>
+    <button class="on" data-a="tab" data-t="cl"><span>🏢</span><span>Clients &amp; Sites</span></button>
+    <button data-a="tab" data-t="bills"><span>🧾</span><span>Vendor bills</span></button>
+    <button data-a="tab" data-t="wages"><span>👷</span><span>Site wages</span></button>
+    <button data-a="tab" data-t="pay"><span>💳</span><span>Payments</span></button>
+    <button data-a="tab" data-t="exp"><span>🏗️</span><span>Other expenses</span></button>
+    <button data-a="tab" data-t="hd"><span>🗂️</span><span>Heads</span></button>
+    <button data-a="tab" data-t="ib"><span>🧮</span><span>Client bills</span></button>
+    <button data-a="tab" data-t="rc"><span>💰</span><span>Receipts</span></button>
+    <button data-a="tab" data-t="cb"><span>📒</span><span>Cash book</span></button>
+    <button data-a="tab" data-t="rep"><span>📊</span><span>Reports</span></button>
+
+  </nav>
+  <div class="sync" id="bk-box"><b class="t">CLOUD &amp; BACKUP</b><div id="cloud-st"></div><div class="row"><button class="btn sm" id="cloud-btn" hidden>Sign in</button></div><div style="margin-top:8px">Keep a backup file as well.</div><div class="row"><button class="btn sm" id="exp">Backup</button><label class="btn">Restore<input type="file" id="imp" accept=".json" hidden></label></div></div>
+</aside>
+<main>
+<header class="top noprint"><small class="b">BILLS &amp; WAGES LEDGER</small><h1 id="h1">Clients &amp; Sites</h1><p id="hp"></p></header>
+<div class="content">
+
+<section id="t-cl">
+  <div class="card">
+    <h2 id="c-h">Add client &amp; site</h2>
+    <div class="g">
+      <div><label>Client name</label><input id="c-name" list="dl-cl" autocomplete="off"></div>
+      <div><label>Address</label><input id="c-addr" autocomplete="off"></div>
+      <div><label>Site name</label><input id="c-site" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="c-save">Save client</button><button class="btn" id="c-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">One row per site. For a client with several sites, add the same client name again with each site name. Saved sites appear in the Site dropdown of Vendor bills, Site wages, Other expenses and Receipts.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Search</label><input id="c-q" placeholder="client, address, site"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Client</th><th>Address</th><th>Site</th><th class="r">Bills</th><th class="r">Wage entries</th><th class="r">Expenses</th><th></th></tr></thead><tbody id="cl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-bills" hidden>
+  <div class="card">
+    <h2 id="b-h">Enter vendor bill</h2>
+    <div class="g">
+      <div><label>Entity</label><select id="b-ent"></select></div>
+      <div><label>Site</label><select id="b-site"></select></div>
+      <div><label>Vendor</label><input id="b-ven" list="dl-ven" autocomplete="off"></div>
+      <div><label>Bill no.</label><input id="b-no" autocomplete="off"></div>
+      <div><label>Bill date</label><input type="date" id="b-date"></div>
+      <div><label>Credit days</label><input type="number" id="b-cd" min="0" placeholder="optional"></div>
+      <div><label>Due date</label><input type="date" id="b-due"></div>
+      <div><label>Taxable amount (₹)</label><input type="number" id="b-base" min="0" step="any"></div>
+      <div><label>GST amount (₹)</label><input type="number" id="b-gst" min="0" step="any" placeholder="as on invoice"></div>
+      <div><label>Total bill amount (₹)</label><input type="number" id="b-amt" readonly tabindex="-1" placeholder="auto"></div>
+      <div><label>Remarks</label><input id="b-rem" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="b-save">Save bill</button><button class="btn" id="b-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">Payments against bills are recorded in the Payments tab.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Entity</label><select id="f-ent"></select></div><div><label>Site</label><select id="f-bsite"></select></div><div><label>Show</label><select id="f-st"><option value="out">Outstanding</option><option value="">All bills</option><option value="paid">Fully paid</option></select></div><div><label>Search</label><input id="f-q" placeholder="vendor, bill no."></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Entity</th><th>Vendor</th><th>Bill no.</th><th>Site</th><th class="r">Taxable</th><th class="r">GST</th><th class="r">Total</th><th class="r">Paid</th><th class="r">Balance</th><th></th></tr></thead><tbody id="bl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-wages" hidden>
+  <div class="card">
+    <h2 id="w-h">Enter site wages</h2>
+    <div class="g">
+      <div><label>Date</label><input type="date" id="w-date"></div>
+      <div><label>Site</label><select id="w-site"></select></div>
+      <div><label>Worker</label><input id="w-worker" list="dl-wk" autocomplete="off"></div>
+      <div><label>Trade</label><input id="w-trade" placeholder="mason, carpenter…" autocomplete="off"></div>
+      <div><label>Days worked</label><input type="number" id="w-days" min="0" step="any"></div>
+      <div><label>Rate per day (₹)</label><input type="number" id="w-rate" min="0" step="any"></div>
+      <div><label>Wage amount (₹)</label><input type="number" id="w-amt" min="0" step="any"></div>
+      <div><label>Remarks</label><input id="w-rem" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="w-save">Save wages</button><button class="btn" id="w-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">Wage payments are recorded in the Payments tab.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Site</label><select id="f-site"></select></div><div><label>Show</label><select id="f-ws"><option value="out">Outstanding</option><option value="">All entries</option><option value="paid">Fully paid</option></select></div><div><label>Search worker</label><input id="f-wq"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Worker</th><th>Trade</th><th class="r">Days</th><th class="r">Rate</th><th class="r">Amount</th><th class="r">Paid</th><th class="r">Balance</th><th></th></tr></thead><tbody id="wl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-pay" hidden>
+  <div class="card">
+    <h2>Record payment</h2>
+    <div class="g">
+      <div><label>Payment to</label><select id="p-type"><option value="vendor">Vendor</option><option value="worker">Worker</option></select></div>
+      <div><label>Date</label><input type="date" id="p-date"></div>
+    </div>
+    <div class="g" id="p-vf" style="margin-top:10px">
+      <div><label>Entity</label><select id="p-ent"></select></div>
+      <div><label>Vendor</label><select id="p-ven"></select></div>
+      <div><label>Site</label><select id="p-vsite"></select></div>
+    </div>
+    <div class="g" id="p-wf" style="margin-top:10px" hidden>
+      <div><label>Worker</label><select id="p-wk"></select></div>
+      <div><label>Site</label><select id="p-wsite"></select></div>
+    </div>
+    <div class="g" style="margin-top:10px">
+      <div><label>Amount paid (₹)</label><input type="number" id="p-amt" min="0" step="any"></div>
+      <div><label>Mode</label><select id="p-mode"><option>Bank transfer</option><option>UPI</option><option>Cash</option><option>Cheque</option></select></div>
+      <div><label>Reference</label><input id="p-ref" autocomplete="off"></div>
+      <div><label>Remarks</label><input id="p-rem" autocomplete="off"></div>
+    </div>
+    <div class="info" id="p-info"></div>
+    <div class="row"><button class="btn pri" id="p-save">Save payment</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">A payment is applied to the oldest outstanding bills (or wage entries) first. Choose a site to pay only that site's dues, or "All sites" to pay across sites. Payments go to the Cash book automatically.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Show</label><select id="f-pt"><option value="">All payments</option><option value="vendor">Vendor payments</option><option value="worker">Worker payments</option></select></div><div><label>Search</label><input id="f-pq" placeholder="name, site, reference"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Entity</th><th>Paid to</th><th>Site</th><th>Applied to</th><th>Mode / ref</th><th class="r">Amount</th><th></th></tr></thead><tbody id="pl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-exp" hidden>
+  <div class="card">
+    <h2 id="x-h">Enter project expense</h2>
+    <div class="g">
+      <div><label>Date</label><input type="date" id="x-date"></div>
+      <div><label>Site</label><select id="x-site"></select></div>
+      <div><label>Head</label><select id="x-cat"></select></div>
+      <div><label>Major head (from head)</label><input id="x-maj" readonly tabindex="-1" placeholder="auto"></div>
+      <div><label>Description</label><input id="x-desc" autocomplete="off"></div>
+      <div><label>Paid to</label><input id="x-to" autocomplete="off"></div>
+      <div><label>Amount (₹)</label><input type="number" id="x-amt" min="0" step="any"></div>
+      <div><label>Mode</label><select id="x-mode"><option>Cash</option><option>UPI</option><option>Bank transfer</option><option>Cheque</option></select></div>
+      <div><label>Reference / bill no.</label><input id="x-ref" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="x-save">Save expense</button><button class="btn" id="x-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">Other expenses are treated as paid when entered and go to the Cash book automatically. Heads and major heads are added in the Heads tab; the major head follows the head and decides where the expense is grouped in the Site-wise consolidated report.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Site</label><select id="f-xsite"></select></div><div><label>Category</label><select id="f-xcat"></select></div><div><label>Search</label><input id="f-xq" placeholder="description, paid to"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Site</th><th>Category</th><th>Description</th><th>Paid to</th><th>Mode</th><th class="r">Amount</th><th></th></tr></thead><tbody id="xl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-hd" hidden>
+  <div class="g" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-items:start">
+  <div class="card">
+    <h2 id="mj-h">Add major head</h2>
+    <div class="g"><div><label>Major head name</label><input id="mj-name" autocomplete="off" placeholder="e.g. Civil work"></div></div>
+    <div class="row"><button class="btn pri" id="mj-save">Save major head</button><button class="btn" id="mj-cancel" hidden>Cancel edit</button></div>
+    <div class="sc" style="margin-top:10px"><table class="tbl"><thead><tr><th>Major head</th><th class="r">Heads</th><th></th></tr></thead><tbody id="mjl"></tbody></table></div>
+  </div>
+  <div class="card">
+    <h2 id="hd-h">Add head</h2>
+    <div class="g"><div><label>Head name</label><input id="hd-name" autocomplete="off" placeholder="e.g. Cement"></div><div><label>Under major head</label><select id="hd-maj"></select></div></div>
+    <div class="row"><button class="btn pri" id="hd-save">Save head</button><button class="btn" id="hd-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">A name can be used only once. Heads are picked in Other expenses and are grouped under their major head in the Site-wise consolidated report. A head or major head in use cannot be deleted.</p>
+  </div>
+  </div>
+  <div class="card"><div class="sc"><table class="tbl"><thead><tr><th>Major head</th><th>Head</th><th class="r">Expense entries</th><th class="r">Amount</th><th></th></tr></thead><tbody id="hdl"></tbody></table></div></div>
+</section>
+
+<section id="t-ib" hidden>
+  <div class="card">
+    <h2 id="ib-h">Enter bill raised to client</h2>
+    <div class="g">
+      <div><label>Bill date</label><input type="date" id="ib-date"></div>
+      <div><label>Client</label><select id="ib-cl"></select></div>
+      <div><label>Site</label><select id="ib-site"></select></div>
+      <div><label>Bill no.</label><input id="ib-no" autocomplete="off"></div>
+      <div><label>Taxable amount (₹)</label><input type="number" id="ib-base" min="0" step="any"></div>
+      <div><label>GST %</label><input type="number" id="ib-gstp" list="dl-gst" min="0" step="any" placeholder="e.g. 18"></div>
+      <div><label>GST amount (₹)</label><input type="number" id="ib-gst" min="0" step="any" placeholder="auto"></div>
+      <div><label>Total bill amount (₹)</label><input type="number" id="ib-amt" readonly tabindex="-1" placeholder="auto"></div>
+      <div><label>Due date</label><input type="date" id="ib-due"></div>
+      <div><label>Remarks</label><input id="ib-rem" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="ib-save">Save client bill</button><button class="btn" id="ib-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">Record bills you raise to clients here. Money received is entered in the Receipts tab and is applied to the oldest unpaid bills of that site first.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Site</label><select id="f-ibsite"></select></div><div><label>Show</label><select id="f-ibst"><option value="out">Outstanding</option><option value="">All bills</option><option value="paid">Fully received</option></select></div><div><label>Search</label><input id="f-ibq" placeholder="client, bill no., remarks"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Client</th><th>Site</th><th>Bill no.</th><th>Due</th><th class="r">Taxable</th><th class="r">GST</th><th class="r">Total</th><th class="r">Received</th><th class="r">Balance</th><th></th></tr></thead><tbody id="ibl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-rc" hidden>
+  <div class="card">
+    <h2 id="rc-h">Record receipt from client</h2>
+    <div class="g">
+      <div><label>Date</label><input type="date" id="rc-date"></div>
+      <div><label>Client</label><select id="rc-cl"></select></div>
+      <div><label>Site</label><select id="rc-site"></select></div>
+      <div><label>Amount received (₹)</label><input type="number" id="rc-amt" min="0" step="any"></div>
+      <div><label>Mode</label><select id="rc-mode"><option>Bank transfer</option><option>UPI</option><option>Cash</option><option>Cheque</option></select></div>
+      <div><label>Reference / cheque no.</label><input id="rc-ref" autocomplete="off"></div>
+      <div><label>Remarks</label><input id="rc-rem" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="rc-save">Save receipt</button><button class="btn" id="rc-cancel" hidden>Cancel edit</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">Receipts appear in the Cash book as money in, and in the Client and Site-wise consolidated reports as received and balance receivable.</p>
+  </div>
+  <div class="card">
+    <div class="g" style="margin-bottom:10px"><div><label>Site</label><select id="f-rcsite"></select></div><div><label>Mode</label><select id="f-rcmode"><option value="">All modes</option><option value="cash">Cash</option><option value="bank">Bank / UPI / Cheque</option></select></div><div><label>Search</label><input id="f-rcq" placeholder="client, reference, remarks"></div></div>
+    <div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Client</th><th>Site</th><th>Mode</th><th>Reference</th><th>Remarks</th><th class="r">Amount</th><th></th></tr></thead><tbody id="rcl"></tbody></table></div>
+  </div>
+</section>
+
+<section id="t-cb" hidden>
+  <div class="card noprint">
+    <h2>Opening balance</h2>
+    <div class="g">
+      <div><label>Opening cash (₹)</label><input type="number" id="cb-ocash" step="any"></div>
+      <div><label>Opening bank / UPI / cheque (₹)</label><input type="number" id="cb-obank" step="any"></div>
+      <div><label>Opening balance date</label><input type="date" id="cb-odate"></div>
+    </div>
+    <div class="row"><button class="btn" id="cb-osave">Save opening balance</button></div>
+    <p class="mut" style="margin:10px 0 0;font-size:12px">The opening balance is the balance at the start of the opening date. Entries dated before it are left out of the Cash book. Leave the date blank to include all entries.</p>
+  </div>
+  <div class="card noprint"><div class="g">
+    <div><label>From date</label><input type="date" id="cb-from"></div>
+    <div><label>To date</label><input type="date" id="cb-to"></div>
+    <div><label>View</label><select id="cb-view"><option value="">All modes</option><option value="cash">Cash only</option><option value="bank">Bank / UPI / Cheque only</option></select></div>
+  </div>
+  <div class="row"><button class="btn pri" id="cb-pdf">Download PDF</button><button class="btn" id="cb-print">Print</button><button class="btn" id="cb-csv">Download CSV</button></div></div>
+  <div id="cb-out"></div>
+</section>
+
+<section id="t-rep" hidden>
+  <div class="card noprint"><div class="g">
+    <div><label>Report</label><select id="r-type"><option value="vendor">Vendor outstanding report</option><option value="labour">Worker / labour report</option><option value="due">Due report</option><option value="cons">Site-wise consolidated report</option><option value="client">Client report</option><option value="exp">Expense report</option><option value="all">All reports</option></select></div>
+    <div id="r-vw"><label>Vendor report view</label><select id="r-view"><option value="entity">Entity-wise (total)</option><option value="site">Site-wise</option></select></div>
+    <div><label>As on date</label><input type="date" id="r-asof"></div>
+    <div><label>Client</label><select id="r-cl"></select></div>
+    <div><label>Site</label><select id="r-site"></select></div>
+    <div><label>Entity (vendor bills)</label><select id="r-ent"></select></div>
+    <label class="chk"><input type="checkbox" id="r-det"> Show bill-wise / worker-wise detail</label>
+  </div>
+  <div class="row"><button class="btn pri" id="r-pdf">Download PDF</button><button class="btn" id="r-print">Print</button><button class="btn" id="r-csv">Download CSV</button></div></div>
+  <div id="rep"></div>
+</section>
+
+</div></main></div>
+<datalist id="dl-gst"><option value="0"><option value="5"><option value="12"><option value="18"><option value="28"></datalist><datalist id="dl-ven"></datalist><datalist id="dl-cl"></datalist><datalist id="dl-wk"></datalist><datalist id="dl-cat"></datalist>
+<div id="cl-login" hidden><form onsubmit="return false"><h2>Sign in</h2><div class="mut" style="font-size:12px">Use the same email and password as Attendance &amp; Payroll. Both apps save to the same cloud account.</div><label>Email<input id="cl-em" type="email" autocomplete="username"></label><label>Password<input id="cl-pw" type="password" autocomplete="current-password"></label><button class="btn pri" id="cl-go" type="button">Sign in</button><div class="mut" style="text-align:center">or</div><button class="btn" id="cl-gg" type="button">Sign in with Google</button><button class="btn" id="cl-skip" type="button">Continue without cloud (this device only)</button><div id="cl-err" class="bad" style="font-size:12px"></div></form></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const KEY='bwl_v1',NEW='__new';
+let DB={};try{DB=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+DB={ents:[],clients:[],bills:[],wages:[],pays:[],exps:[],rcpts:[],ibills:[],cb:{cash:0,bank:0,date:''},...DB};
+let FBU=null,fbT=null,lastSync=0,DIRTY=false,NOCLOUD=false,LDENIED=false,curTab='cl';
+const save=quiet=>{const q=quiet===true;if(!q)DB._u=Date.now();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){alert('Could not save: browser storage is full or blocked.')}if(!q)cloudPush()};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const n=v=>parseFloat(v)||0,r2=x=>Math.round(x*100)/100;
+const sum=(L,f)=>L.reduce((t,x)=>t+f(x),0);
+const grp=(L,f)=>{const o={};L.forEach(x=>(o[f(x)]=o[f(x)]||[]).push(x));return o};
+const fr=x=>(+x||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fm=x=>'₹'+fr(x);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>iso(new Date());
+const fd=d=>d?new Date(d+'T00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,'-'):'–';
+const dd=(a,b)=>Math.round((new Date(a+'T00:00')-new Date(b+'T00:00'))/864e5);
+const addDays=(d,k)=>{const x=new Date(d+'T00:00');x.setDate(x.getDate()+k);return iso(x)};
+const paidOf=(b,asof)=>(b.pay||[]).filter(p=>!asof||p.d<=asof).reduce((s,p)=>s+n(p.a),0);
+const wpaid=(w,asof)=>n(w.paid)+(w.pay||[]).filter(p=>!asof||p.d<=asof).reduce((s,p)=>s+n(p.a),0);
+const uniq=a=>[...new Set(a.filter(Boolean))].sort((x,y)=>x.localeCompare(y));
+const DEFCATS=['Material','Transport','Equipment hire','Fuel','Electricity & water','Food & accommodation','Tools & consumables','Safety','Permits & fees','Miscellaneous'];
+const DEFMAJORS=['Materials & Consumables','Transport & Equipment','Site Overheads','Miscellaneous & Others'];
+const DEFMAP={'Material':DEFMAJORS[0],'Tools & consumables':DEFMAJORS[0],'Transport':DEFMAJORS[1],'Equipment hire':DEFMAJORS[1],'Fuel':DEFMAJORS[1],'Electricity & water':DEFMAJORS[2],'Food & accommodation':DEFMAJORS[2],'Safety':DEFMAJORS[2],'Permits & fees':DEFMAJORS[3],'Miscellaneous':DEFMAJORS[3]};
+const nk=v=>String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase();
+const nm=v=>String(v==null?'':v).trim().replace(/\s+/g,' ');
+const headOf=c=>DB.heads.find(h=>nk(h.name)===nk(c));
+const guessMajor=c=>{const h=headOf(c);return h?h.major:''};
+const majorOf=x=>{const h=headOf(x.cat);return h?h.major:((x.major&&(DB.majors||[]).find(y=>nk(y)===nk(x.major)))||'Unassigned')};
+function ensureHeads(){
+  if(!Array.isArray(DB.majors))DB.majors=[];if(!Array.isArray(DB.heads))DB.heads=[];if(!Array.isArray(DB.ibills))DB.ibills=[];
+  if(!DB.hseed){
+    DEFMAJORS.forEach(m=>{if(!DB.majors.some(y=>nk(y)===nk(m)))DB.majors.push(m)});
+    DEFCATS.forEach(c=>{if(!headOf(c))DB.heads.push({id:uid(),name:c,major:DEFMAP[c]||DEFMAJORS[3]})});
+    DB.hseed=1;
+  }
+  DB.exps.forEach(x=>{
+    if(!nm(x.cat))return;
+    const h=headOf(x.cat);if(h){x.cat=h.name;return}
+    let m=(x.major&&DB.majors.find(y=>nk(y)===nk(x.major)))||DEFMAP[x.cat]||DEFMAJORS[3];
+    if(!DB.majors.some(y=>nk(y)===nk(m)))DB.majors.push(m);
+    m=DB.majors.find(y=>nk(y)===nk(m));
+    x.cat=nm(x.cat);DB.heads.push({id:uid(),name:x.cat,major:m});
+  });
+}
+ensureHeads();save(true);
+const isCash=m=>/^cash$/i.test(m||'');
+const vendors=()=>uniq(DB.bills.map(b=>b.ven)),workers=()=>uniq(DB.wages.map(w=>w.worker)),clientNames=()=>uniq(DB.clients.map(c=>c.name)),cats=()=>uniq(DB.heads.map(h=>h.name));
+const sites=()=>uniq([...DB.clients.map(c=>c.site),...DB.bills.map(b=>b.site),...DB.wages.map(w=>w.site),...DB.exps.map(x=>x.site),...DB.rcpts.map(r=>r.site),...DB.ibills.map(b=>b.site)]);
+const siteClient=s=>s?DB.clients.find(c=>c.site.toLowerCase()===s.toLowerCase()):null;
+const canon=(list,v)=>{v=v.trim().replace(/\s+/g,' ');return list.find(x=>x.toLowerCase()===v.toLowerCase())||v};
+const opts=(list,first,sel)=>(first!=null?`<option value="">${first}</option>`:'')+list.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
+const setGen=t=>{window.GENTXT=String(t);let st=document.getElementById('pgstyle');if(!st){st=document.createElement('style');st.id='pgstyle';document.head.appendChild(st)}
+  st.textContent='@media print{@page{size:A4 portrait;margin:10mm 10mm 16mm;@bottom-center{content:"'+String(t).replace(/["\\]/g,'')+'";font:8.5px Arial,sans-serif;color:#444}@bottom-right{content:"Page " counter(page) " of " counter(pages);font:8.5px Arial,sans-serif;color:#444}}}'};
+window.GENTXT='';
+let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)};
+const noSite=()=>sites().length?'Select the site.':'Add the client and site in Clients & Sites first.';
+
+function fill(){
+  const e=DB.ents,s=sites();
+  ['#f-ent','#r-ent'].forEach(id=>{const el=$(id),v=el.value;el.innerHTML=opts(e,'All entities',v)});
+  ['#f-site','#f-bsite','#f-xsite','#r-site','#f-rcsite','#f-ibsite'].forEach(id=>{const el=$(id),v=el.value;el.innerHTML=opts(s,'All sites',v)});
+  ['#b-site','#w-site','#x-site'].forEach(id=>{const el=$(id),v=el.value;el.innerHTML=opts(s,s.length?'Select site':'Add a site in Clients & Sites first',v)});
+  const fx=$('#f-xcat'),fv=fx.value;fx.innerHTML=opts(uniq(DB.exps.map(x=>x.cat)),'All categories',fv);
+  const rc=$('#r-cl'),rv=rc.value;rc.innerHTML=opts(clientNames(),'All clients',rv);
+  const rcc=$('#rc-cl'),rcv=rcc.value;rcc.innerHTML=opts(clientNames(),'Select client',rcv);rcSites();
+  const ibc=$('#ib-cl'),ibv=ibc.value;ibc.innerHTML=opts(clientNames(),'Select client',ibv);ibSites();
+  const b=$('#b-ent'),v=b.value;b.innerHTML=opts(e,'Select entity',v)+`<option value="${NEW}">＋ Add new entity…</option>`;if(e.includes(v))b.value=v;
+  $('#dl-ven').innerHTML=vendors().map(x=>`<option value="${esc(x)}">`).join('');
+  $('#dl-cl').innerHTML=clientNames().map(x=>`<option value="${esc(x)}">`).join('');
+  $('#dl-wk').innerHTML=workers().map(x=>`<option value="${esc(x)}">`).join('');
+  const xc=$('#x-cat'),xv=xc.value;xc.innerHTML=opts(cats(),cats().length?'Select head':'Add heads in the Heads tab first',xv)+`<option value="${NEW}">＋ Add new head…</option>`;if(cats().includes(xv))xc.value=xv;
+  $('#x-maj').value=guessMajor(xc.value);
+  payFill();
+}
+$('#b-ent').onchange=e=>{
+  if(e.target.value!==NEW)return;
+  const nm=(prompt('Name of the new entity (company / firm)')||'').trim().replace(/\s+/g,' ');
+  if(nm){const ex=DB.ents.find(x=>x.toLowerCase()===nm.toLowerCase());if(!ex){DB.ents.push(nm);DB.ents.sort((a,b)=>a.localeCompare(b));save()}fill();$('#b-ent').value=ex||nm}
+  else $('#b-ent').value='';
+};
+
+/* ---------- clients & sites ---------- */
+let ec=null;
+function saveClient(){
+  const name=canon(clientNames(),$('#c-name').value),addr=$('#c-addr').value.trim(),site=$('#c-site').value.trim().replace(/\s+/g,' ');
+  if(!name)return alert('Enter the client name.');
+  if(!site)return alert('Enter the site name.');
+  const dup=DB.clients.find(c=>c.id!==ec&&c.site.toLowerCase()===site.toLowerCase());
+  if(dup)return alert('The site "'+dup.site+'" is already added under client '+dup.name+'.');
+  let old=null;
+  if(ec){const c=DB.clients.find(x=>x.id===ec);old=c.site;Object.assign(c,{name,addr,site})}
+  else DB.clients.push({id:uid(),name,addr,site});
+  const match=s=>s&&(s===old||s.toLowerCase()===site.toLowerCase());
+  [...DB.bills,...DB.wages,...DB.exps,...DB.rcpts,...DB.ibills].forEach(x=>{if(match(x.site))x.site=site});
+  save();clearClient();fill();rClients();toast('Client saved');
+}
+function clearClient(){
+  ec=null;['c-name','c-addr','c-site'].forEach(i=>$('#'+i).value='');
+  $('#c-save').textContent='Save client';$('#c-cancel').hidden=true;$('#c-h').textContent='Add client & site';
+}
+function editClient(id){
+  const c=DB.clients.find(x=>x.id===id);ec=id;
+  $('#c-name').value=c.name;$('#c-addr').value=c.addr||'';$('#c-site').value=c.site;
+  $('#c-save').textContent='Update client';$('#c-cancel').hidden=false;$('#c-h').textContent='Edit client & site';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rClients(){
+  const q=$('#c-q').value.toLowerCase();
+  const rows=DB.clients.filter(c=>!q||(c.name+' '+(c.addr||'')+' '+c.site).toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)||a.site.localeCompare(b.site));
+  $('#cl').innerHTML=rows.map(c=>{
+    const nb=DB.bills.filter(b=>b.site===c.site).length,nw=DB.wages.filter(w=>w.site===c.site).length,nx=DB.exps.filter(x=>x.site===c.site).length;
+    return`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.addr||'')}</td><td>${esc(c.site)}</td><td class="r">${nb}</td><td class="r">${nw}</td><td class="r">${nx}</td><td class="r"><button class="btn sm" data-a="cedit" data-id="${c.id}">Edit</button> <button class="btn sm red" data-a="cdel" data-id="${c.id}" aria-label="Delete client">✕</button></td></tr>`}).join('')
+    ||'<tr><td colspan="7" class="empty">No clients added yet. Add a client, address and site above.</td></tr>';
+}
+$('#c-name').onchange=()=>{
+  const c=DB.clients.find(x=>x.name.toLowerCase()===$('#c-name').value.trim().toLowerCase());
+  if(c&&!$('#c-addr').value)$('#c-addr').value=c.addr||'';
+};
+
+/* ---------- GST helper (taxable + GST = total) ---------- */
+function gstCalc(p,manual){
+  if(p==='ib'&&!manual){const base=n($('#ib-base').value),rate=n($('#ib-gstp').value);$('#ib-gst').value=base>0&&rate>0?r2(base*rate/100):''}
+  const t=r2(n($('#'+p+'-base').value)+n($('#'+p+'-gst').value));$('#'+p+'-amt').value=t>0?t:'';
+}
+$('#b-base').oninput=()=>gstCalc('b',true);$('#b-gst').oninput=()=>gstCalc('b',true);
+$('#ib-base').oninput=()=>gstCalc('ib',false);$('#ib-gstp').oninput=()=>gstCalc('ib',false);$('#ib-gst').oninput=()=>gstCalc('ib',true);
+const gstOf=b=>n(b.gst),baseOf2=b=>b.base!=null&&b.base!==''?n(b.base):n(b.amt)-n(b.gst);
+
+/* ---------- vendor bills ---------- */
+let eb=null;
+function saveBill(){
+  const ent=$('#b-ent').value,ven=canon(vendors(),$('#b-ven').value),no=$('#b-no').value.trim(),date=$('#b-date').value,amt=n($('#b-amt').value),site=$('#b-site').value;
+  if(!ent||ent===NEW)return alert('Select the entity this bill belongs to.');
+  if(!site)return alert(noSite());
+  if(!ven)return alert('Enter the vendor name.');
+  if(!date)return alert('Enter the bill date.');
+  if(!(amt>0))return alert('Enter the taxable amount (and GST %, if any).');
+  if(no&&DB.bills.some(b=>b.id!==eb&&nk(b.ent)===nk(ent)&&nk(b.ven)===nk(ven)&&nk(b.no)===nk(no)))return alert('Bill no. "'+no+'" is already entered for this vendor under this entity. Duplicate entries are not allowed.');
+  if(!no&&DB.bills.some(b=>b.id!==eb&&!nk(b.no)&&nk(b.ent)===nk(ent)&&nk(b.ven)===nk(ven)&&b.date===date&&b.site===site&&n(b.amt)===amt))return alert('A bill with the same entity, vendor, date, site and amount is already entered. Duplicate entries are not allowed.');
+  const o={ent,ven,no,date,due:$('#b-due').value,site,amt,base:n($('#b-base').value),gst:n($('#b-gst').value),rem:$('#b-rem').value.trim()};
+  if(eb)Object.assign(DB.bills.find(b=>b.id===eb),o);else DB.bills.push({id:uid(),pay:[],...o});
+  save();clearBill(true);fill();rBills();toast('Bill saved');
+}
+function clearBill(keep){
+  eb=null;['b-ven','b-no','b-due','b-cd','b-site','b-base','b-gst','b-amt','b-rem'].forEach(i=>$('#'+i).value='');
+  if(!keep)$('#b-date').value=today();
+  $('#b-save').textContent='Save bill';$('#b-cancel').hidden=true;$('#b-h').textContent='Enter vendor bill';
+}
+function editBill(id){
+  const b=DB.bills.find(x=>x.id===id);eb=id;
+  $('#b-ent').value=b.ent;$('#b-ven').value=b.ven;$('#b-no').value=b.no||'';$('#b-date').value=b.date;$('#b-due').value=b.due||'';$('#b-cd').value='';
+  $('#b-site').value=b.site||'';$('#b-base').value=baseOf2(b);$('#b-gst').value=b.gst||'';$('#b-amt').value=b.amt;$('#b-rem').value=b.rem||'';
+  $('#b-save').textContent='Update bill';$('#b-cancel').hidden=false;$('#b-h').textContent='Edit vendor bill';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rBills(){
+  const fe=$('#f-ent').value,fs=$('#f-st').value,fsite=$('#f-bsite').value,q=$('#f-q').value.toLowerCase();
+  const rows=DB.bills.filter(b=>(!fe||b.ent===fe)&&(!fsite||b.site===fsite)&&(!q||(b.ven+' '+(b.no||'')+' '+(b.site||'')).toLowerCase().includes(q)))
+    .map(b=>({b,paid:paidOf(b),bal:r2(b.amt-paidOf(b))})).filter(x=>!fs||(fs==='out'?x.bal>0.005:x.bal<=0.005))
+    .sort((a,c)=>c.b.date.localeCompare(a.b.date));
+  let tx=0,tg=0,ta=0,tp=0,tb=0;
+  $('#bl').innerHTML=rows.map(({b,paid,bal})=>{tx+=baseOf2(b);tg+=gstOf(b);ta+=b.amt;tp+=paid;tb+=bal;
+    return`<tr><td>${fd(b.date)}</td><td>${esc(b.ent)}</td><td>${esc(b.ven)}</td><td>${esc(b.no||'–')}</td><td>${esc(b.site||'')}</td><td class="r">${fm(baseOf2(b))}</td><td class="r">${gstOf(b)>0?fm(gstOf(b))+(b.gstp?'<div class="mut" style="font-size:10px">'+b.gstp+'%</div>':''):'–'}</td><td class="r">${fm(b.amt)}</td><td class="r">${fm(paid)}</td><td class="r ${bal>0.005?'warn':'ok'}"><b>${fm(bal)}</b></td><td class="r"><button class="btn sm" data-a="bedit" data-id="${b.id}">Edit</button> <button class="btn sm red" data-a="bdel" data-id="${b.id}" aria-label="Delete bill">✕</button></td></tr>`}).join('')
+    ||'<tr><td colspan="11" class="empty">No bills to show.</td></tr>';
+  if(rows.length)$('#bl').innerHTML+=`<tr class="tot"><td colspan="5">Total (${rows.length} bills)</td><td class="r">${fm(tx)}</td><td class="r">${fm(tg)}</td><td class="r">${fm(ta)}</td><td class="r">${fm(tp)}</td><td class="r">${fm(tb)}</td><td></td></tr>`;
+}
+
+/* ---------- site wages ---------- */
+let ew=null;
+function saveWage(){
+  const site=$('#w-site').value,worker=canon(workers(),$('#w-worker').value),date=$('#w-date').value,amt=n($('#w-amt').value);
+  if(!site)return alert(noSite());
+  if(!worker)return alert('Enter the worker name.');
+  if(!date)return alert('Enter the date.');
+  if(!(amt>0))return alert('Enter the wage amount (or days and rate).');
+  const o={date,site,worker,trade:$('#w-trade').value.trim(),days:n($('#w-days').value),rate:n($('#w-rate').value),amt,rem:$('#w-rem').value.trim()};
+  if(DB.wages.some(w=>w.id!==ew&&w.date===o.date&&w.site===o.site&&nk(w.worker)===nk(o.worker)&&nk(w.trade)===nk(o.trade)&&n(w.amt)===o.amt&&nk(w.rem)===nk(o.rem)))return alert('This wage entry is already entered (same date, site, worker, trade and amount). Duplicate entries are not allowed.');
+  if(ew)Object.assign(DB.wages.find(w=>w.id===ew),o);else DB.wages.push({id:uid(),pay:[],...o});
+  save();clearWage(true);fill();rWages();toast('Wages saved');
+}
+function clearWage(keep){
+  ew=null;['w-worker','w-trade','w-days','w-rate','w-amt','w-rem'].forEach(i=>$('#'+i).value='');
+  if(!keep){$('#w-date').value=today();$('#w-site').value=''}
+  $('#w-save').textContent='Save wages';$('#w-cancel').hidden=true;$('#w-h').textContent='Enter site wages';
+}
+function editWage(id){
+  const w=DB.wages.find(x=>x.id===id);ew=id;
+  $('#w-date').value=w.date;$('#w-site').value=w.site;$('#w-worker').value=w.worker;$('#w-trade').value=w.trade||'';$('#w-days').value=w.days||'';$('#w-rate').value=w.rate||'';$('#w-amt').value=w.amt;$('#w-rem').value=w.rem||'';
+  $('#w-save').textContent='Update wages';$('#w-cancel').hidden=false;$('#w-h').textContent='Edit site wages';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rWages(){
+  const fs=$('#f-site').value,st=$('#f-ws').value,q=$('#f-wq').value.toLowerCase();
+  const rows=DB.wages.filter(w=>(!fs||w.site===fs)&&(!q||w.worker.toLowerCase().includes(q))).map(w=>{const paid=wpaid(w);return{w,paid,bal:r2(w.amt-paid)}}).filter(x=>!st||(st==='out'?x.bal>0.005:x.bal<=0.005));
+  const by=grp(rows,x=>x.w.site);
+  let h='',GA=0,GP=0;
+  Object.keys(by).sort((a,b)=>a.localeCompare(b)).forEach(s=>{
+    const L=by[s].sort((a,b)=>b.w.date.localeCompare(a.w.date)),A=sum(L,x=>x.w.amt),P=sum(L,x=>x.paid);GA+=A;GP+=P;
+    h+=`<tr class="gh"><td colspan="5">${esc(s)}</td><td class="r">${fm(A)}</td><td class="r">${fm(P)}</td><td class="r">${fm(A-P)}</td><td></td></tr>`;
+    h+=L.map(({w,paid,bal})=>`<tr><td>${fd(w.date)}</td><td>${esc(w.worker)}</td><td>${esc(w.trade||'')}</td><td class="r">${w.days||''}</td><td class="r">${w.rate?fm(w.rate):''}</td><td class="r">${fm(w.amt)}</td><td class="r">${fm(paid)}</td><td class="r ${bal>0.005?'warn':'ok'}"><b>${fm(bal)}</b></td><td class="r"><button class="btn sm" data-a="wedit" data-id="${w.id}">Edit</button> <button class="btn sm red" data-a="wdel" data-id="${w.id}" aria-label="Delete entry">✕</button></td></tr>`).join('');
+  });
+  $('#wl').innerHTML=h?h+`<tr class="tot"><td colspan="5">All sites</td><td class="r">${fm(GA)}</td><td class="r">${fm(GP)}</td><td class="r">${fm(GA-GP)}</td><td></td></tr>`:'<tr><td colspan="9" class="empty">No wage entries to show.</td></tr>';
+}
+
+/* ---------- payments (vendor & worker) ---------- */
+const vOut=(ent,ven,site)=>sum(DB.bills.filter(b=>b.ent===ent&&b.ven===ven&&(!site||b.site===site)),b=>Math.max(0,r2(b.amt-paidOf(b))));
+const wOut=(wk,site)=>sum(DB.wages.filter(w=>w.worker===wk&&(!site||w.site===site)),w=>Math.max(0,r2(w.amt-wpaid(w))));
+function payFill(fillAmt){
+  const t=$('#p-type').value;
+  $('#p-vf').hidden=t!=='vendor';$('#p-wf').hidden=t!=='worker';
+  let out=0,ready=false;
+  if(t==='vendor'){
+    const pe=$('#p-ent');pe.innerHTML=opts(DB.ents,'Select entity',pe.value);
+    const ent=pe.value,open=DB.bills.filter(b=>b.ent===ent&&r2(b.amt-paidOf(b))>0.005);
+    const pv=$('#p-ven');pv.innerHTML=opts(uniq(open.map(b=>b.ven)),ent?'Select vendor':'Select entity first',pv.value);
+    const ven=pv.value,o2=open.filter(b=>b.ven===ven);
+    const ps=$('#p-vsite');ps.innerHTML=opts(uniq(o2.map(b=>b.site)),'All sites',ps.value);
+    if(ent&&ven){out=vOut(ent,ven,ps.value);ready=true}
+    $('#p-info').innerHTML=ready?`Outstanding to <b>${esc(ven)}</b>${ps.value?' at '+esc(ps.value):' (all sites)'}: <b class="warn">${fm(out)}</b>`:'Select the entity and vendor to see the outstanding amount.';
+  }else{
+    const pw=$('#p-wk');pw.innerHTML=opts(uniq(DB.wages.filter(w=>r2(w.amt-wpaid(w))>0.005).map(w=>w.worker)),'Select worker',pw.value);
+    const wk=pw.value,o2=DB.wages.filter(w=>w.worker===wk&&r2(w.amt-wpaid(w))>0.005);
+    const ps=$('#p-wsite');ps.innerHTML=opts(uniq(o2.map(w=>w.site)),'All sites',ps.value);
+    if(wk){out=wOut(wk,ps.value);ready=true}
+    $('#p-info').innerHTML=ready?`Outstanding wages of <b>${esc(wk)}</b>${ps.value?' at '+esc(ps.value):' (all sites)'}: <b class="warn">${fm(out)}</b>`:'Select the worker to see the outstanding amount.';
+  }
+  if(fillAmt&&ready&&out>0)$('#p-amt').value=out;
+  if(fillAmt&&!ready)$('#p-amt').value='';
+}
+function allocate(list,balOf,amt,make){
+  let rem=amt;
+  list.map(x=>({x,bal:balOf(x)})).filter(o=>o.bal>0.005).sort((a,b)=>a.x.date.localeCompare(b.x.date)).forEach(o=>{
+    if(rem<=0.004)return;const a=r2(Math.min(rem,o.bal));make(o.x,a);rem=r2(rem-a);
+  });
+}
+function savePay(){
+  const t=$('#p-type').value,date=$('#p-date').value,amt=n($('#p-amt').value),mode=$('#p-mode').value,ref=$('#p-ref').value.trim(),rem=$('#p-rem').value.trim(),id=uid();
+  if(!date||!(amt>0))return alert('Enter the payment date and amount.');
+  let rec;
+  if(t==='vendor'){
+    const ent=$('#p-ent').value,ven=$('#p-ven').value,site=$('#p-vsite').value;
+    if(!ent)return alert('Select the entity.');
+    if(!ven)return alert('Select the vendor.');
+    const out=vOut(ent,ven,site);
+    if(amt>out+0.005)return alert('The amount is more than the outstanding ('+fm(out)+'). Reduce the amount.');
+    if(DB.pays.some(p=>p.type==='vendor'&&p.date===date&&nk(p.party)===nk(ven)&&nk(p.ent)===nk(ent)&&(p.site||'')===site&&n(p.amt)===amt&&nk(p.mode)===nk(mode)&&nk(p.ref)===nk(ref)&&nk(p.rem)===nk(rem)))return alert('This payment is already entered (same date, vendor, site, amount, mode and reference). Duplicate entries are not allowed. Change the reference or remarks if it is a different payment.');
+    allocate(DB.bills.filter(b=>b.ent===ent&&b.ven===ven&&(!site||b.site===site)),b=>r2(b.amt-paidOf(b)),amt,(b,a)=>{(b.pay=b.pay||[]).push({d:date,a,m:mode,r:ref,pid:id})});
+    rec={id,type:'vendor',date,ent,site,party:ven,amt,mode,ref,rem};
+  }else{
+    const wk=$('#p-wk').value,site=$('#p-wsite').value;
+    if(!wk)return alert('Select the worker.');
+    const out=wOut(wk,site);
+    if(amt>out+0.005)return alert('The amount is more than the outstanding wages ('+fm(out)+'). Reduce the amount.');
+    if(DB.pays.some(p=>p.type==='worker'&&p.date===date&&nk(p.party)===nk(wk)&&(p.site||'')===site&&n(p.amt)===amt&&nk(p.mode)===nk(mode)&&nk(p.ref)===nk(ref)&&nk(p.rem)===nk(rem)))return alert('This payment is already entered (same date, worker, site, amount, mode and reference). Duplicate entries are not allowed. Change the reference or remarks if it is a different payment.');
+    allocate(DB.wages.filter(w=>w.worker===wk&&(!site||w.site===site)),w=>r2(w.amt-wpaid(w)),amt,(w,a)=>{(w.pay=w.pay||[]).push({d:date,a,m:mode,r:ref,pid:id})});
+    rec={id,type:'worker',date,ent:'',site,party:wk,amt,mode,ref,rem};
+  }
+  DB.pays.push(rec);save();
+  ['p-amt','p-ref','p-rem'].forEach(i=>$('#'+i).value='');
+  payFill();rPays();toast('Payment saved');
+}
+function cleanPays(){
+  DB.pays.forEach(p=>{const src=p.type==='vendor'?DB.bills:DB.wages;p.amt=r2(sum(src,e=>sum((e.pay||[]).filter(x=>x.pid===p.id),x=>n(x.a))))});
+  DB.pays=DB.pays.filter(p=>p.amt>0.004);
+}
+function rPays(){
+  const ft=$('#f-pt').value,q=$('#f-pq').value.toLowerCase(),R=[];
+  DB.pays.forEach(p=>{
+    const lk=(p.type==='vendor'?DB.bills:DB.wages).filter(e=>(e.pay||[]).some(x=>x.pid===p.id));
+    const labs=p.type==='vendor'?lk.map(b=>'Bill '+(b.no||'–')):lk.map(w=>fd(w.date)+(p.site?'':' · '+(w.site||'')));
+    R.push({kind:'p',id:p.id,d:p.date,type:p.type,ent:p.ent||'',party:p.party,site:p.site||'All sites',app:labs.slice(0,4).join(', ')+(labs.length>4?' +'+(labs.length-4)+' more':''),mode:[p.mode,p.ref,p.rem].filter(Boolean).join(' · '),amt:p.amt});
+  });
+  DB.bills.forEach(b=>(b.pay||[]).forEach((x,i)=>{if(!x.pid)R.push({kind:'lb',id:b.id,i,d:x.d,type:'vendor',ent:b.ent,party:b.ven,site:b.site||'',app:'Bill '+(b.no||'–'),mode:[x.m,x.r].filter(Boolean).join(' · '),amt:n(x.a)})}));
+  DB.wages.forEach(w=>{if(n(w.paid)>0)R.push({kind:'lw',id:w.id,d:w.date,type:'worker',ent:'',party:w.worker,site:w.site||'',app:'Earlier entry',mode:'',amt:n(w.paid)})});
+  const rows=R.filter(r=>(!ft||r.type===ft)&&(!q||(r.party+' '+r.site+' '+r.ent+' '+r.app+' '+r.mode).toLowerCase().includes(q))).sort((a,b)=>b.d.localeCompare(a.d));
+  const act=r=>r.kind==='p'?`<button class="btn sm red" data-a="pdel" data-id="${r.id}" aria-label="Delete payment">✕</button>`:r.kind==='lb'?`<button class="btn sm red" data-a="lpdel" data-id="${r.id}" data-i="${r.i}" aria-label="Delete payment">✕</button>`:`<button class="btn sm red" data-a="lwdel" data-id="${r.id}" aria-label="Clear paid amount">✕</button>`;
+  $('#pl').innerHTML=rows.map(r=>`<tr><td>${fd(r.d)}</td><td>${r.type==='vendor'?'Vendor':'Worker'}</td><td>${esc(r.ent)}</td><td>${esc(r.party)}</td><td>${esc(r.site)}</td><td>${esc(r.app)}</td><td>${esc(r.mode)}</td><td class="r"><b>${fm(r.amt)}</b></td><td class="r">${act(r)}</td></tr>`).join('')
+    ||'<tr><td colspan="9" class="empty">No payments to show.</td></tr>';
+  if(rows.length)$('#pl').innerHTML+=`<tr class="tot"><td colspan="7">Total (${rows.length} payments)</td><td class="r">${fm(sum(rows,r=>r.amt))}</td><td></td></tr>`;
+}
+
+/* ---------- other expenses ---------- */
+let ex=null;
+function saveExp(){
+  const site=$('#x-site').value,date=$('#x-date').value,cat=canon(cats(),$('#x-cat').value),amt=n($('#x-amt').value);
+  if(!site)return alert(noSite());
+  if(!date)return alert('Enter the date.');
+  if(!cat||cat===NEW||!headOf(cat))return alert('Select the expense head. New heads are added in the Heads tab.');
+  if(!(amt>0))return alert('Enter the amount.');
+  const o={date,site,cat,major:majorOf({cat}),desc:$('#x-desc').value.trim(),to:$('#x-to').value.trim(),amt,mode:$('#x-mode').value,ref:$('#x-ref').value.trim()};
+  if(DB.exps.some(e=>e.id!==ex&&e.date===o.date&&e.site===o.site&&nk(e.cat)===nk(o.cat)&&n(e.amt)===o.amt&&nk(e.to)===nk(o.to)&&nk(e.ref)===nk(o.ref)&&nk(e.desc)===nk(o.desc)))return alert('This expense is already entered (same date, site, head, amount, paid to, reference and description). Duplicate entries are not allowed.');
+  if(ex)Object.assign(DB.exps.find(x=>x.id===ex),o);else DB.exps.push({id:uid(),...o});
+  save();clearExp(true);fill();rExps();toast('Expense saved');
+}
+function clearExp(keep){
+  ex=null;['x-desc','x-to','x-amt','x-ref'].forEach(i=>$('#'+i).value='');
+  if(!keep){$('#x-date').value=today();$('#x-site').value='';$('#x-cat').value='';$('#x-maj').value=''}
+  $('#x-save').textContent='Save expense';$('#x-cancel').hidden=true;$('#x-h').textContent='Enter project expense';
+}
+function editExp(id){
+  const x=DB.exps.find(e=>e.id===id);ex=id;
+  $('#x-date').value=x.date;$('#x-site').value=x.site;$('#x-cat').value=x.cat;$('#x-maj').value=majorOf(x);$('#x-desc').value=x.desc||'';$('#x-to').value=x.to||'';$('#x-amt').value=x.amt;$('#x-mode').value=x.mode||'Cash';$('#x-ref').value=x.ref||'';
+  $('#x-save').textContent='Update expense';$('#x-cancel').hidden=false;$('#x-h').textContent='Edit project expense';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rExps(){
+  const fs=$('#f-xsite').value,fc=$('#f-xcat').value,q=$('#f-xq').value.toLowerCase();
+  const rows=DB.exps.filter(x=>(!fs||x.site===fs)&&(!fc||x.cat===fc)&&(!q||((x.desc||'')+' '+(x.to||'')+' '+(x.ref||'')).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+  $('#xl').innerHTML=rows.map(x=>`<tr><td>${fd(x.date)}</td><td>${esc(x.site)}</td><td>${esc(x.cat)}<div class="mut" style="font-size:11px">${esc(majorOf(x))}</div></td><td>${esc(x.desc||'')}${x.ref?' <span class="mut">· '+esc(x.ref)+'</span>':''}</td><td>${esc(x.to||'')}</td><td>${esc(x.mode||'')}</td><td class="r"><b>${fm(x.amt)}</b></td><td class="r"><button class="btn sm" data-a="xedit" data-id="${x.id}">Edit</button> <button class="btn sm red" data-a="xdel" data-id="${x.id}" aria-label="Delete expense">✕</button></td></tr>`).join('')
+    ||'<tr><td colspan="8" class="empty">No expenses to show.</td></tr>';
+  if(rows.length)$('#xl').innerHTML+=`<tr class="tot"><td colspan="6">Total (${rows.length} entries)</td><td class="r">${fm(sum(rows,x=>x.amt))}</td><td></td></tr>`;
+}
+
+/* ---------- receipts from clients ---------- */
+let er=null;
+function rcSites(sel){
+  const cl=$('#rc-cl').value,el=$('#rc-site'),v=sel!=null?sel:el.value;
+  const L=cl?DB.clients.filter(c=>c.name===cl).map(c=>c.site):[];
+  if(sel&&!L.includes(sel))L.push(sel);
+  el.innerHTML=opts(L,cl||sel?(L.length?'Select site':'No site'):'Select client first',v);
+  if(L.length===1&&!el.value)el.value=L[0];
+}
+function saveRcpt(){
+  const date=$('#rc-date').value,site=$('#rc-site').value,amt=n($('#rc-amt').value);
+  if(!$('#rc-cl').value&&!site)return alert('Select the client.');
+  if(!site)return alert('Select the site.');
+  if(!date)return alert('Enter the receipt date.');
+  if(!(amt>0))return alert('Enter the amount received.');
+  const o={date,site,amt,mode:$('#rc-mode').value,ref:$('#rc-ref').value.trim(),rem:$('#rc-rem').value.trim()};
+  if(DB.rcpts.some(r=>r.id!==er&&r.date===o.date&&r.site===o.site&&n(r.amt)===o.amt&&nk(r.mode)===nk(o.mode)&&nk(r.ref)===nk(o.ref)&&nk(r.rem)===nk(o.rem)))return alert('This receipt is already entered (same date, site, amount, mode and reference). Duplicate entries are not allowed.');
+  if(o.ref&&DB.rcpts.some(r=>r.id!==er&&nk(r.ref)===nk(o.ref)&&nk(r.mode)===nk(o.mode)))return alert('The reference "'+o.ref+'" is already used in another receipt with the same mode. Duplicate entries are not allowed.');
+  if(er)Object.assign(DB.rcpts.find(r=>r.id===er),o);else DB.rcpts.push({id:uid(),...o});
+  save();clearRcpt(true);fill();rRc();toast('Receipt saved');
+}
+function clearRcpt(keep){
+  er=null;['rc-amt','rc-ref','rc-rem'].forEach(i=>$('#'+i).value='');
+  if(!keep){$('#rc-date').value=today();$('#rc-cl').value='';rcSites('')}
+  $('#rc-save').textContent='Save receipt';$('#rc-cancel').hidden=true;$('#rc-h').textContent='Record receipt from client';
+}
+function editRcpt(id){
+  const r=DB.rcpts.find(x=>x.id===id),c=siteClient(r.site);er=id;
+  $('#rc-date').value=r.date;$('#rc-cl').value=c?c.name:'';rcSites(r.site);$('#rc-site').value=r.site;
+  $('#rc-amt').value=r.amt;$('#rc-mode').value=r.mode||'Bank transfer';$('#rc-ref').value=r.ref||'';$('#rc-rem').value=r.rem||'';
+  $('#rc-save').textContent='Update receipt';$('#rc-cancel').hidden=false;$('#rc-h').textContent='Edit receipt';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rRc(){
+  const fs=$('#f-rcsite').value,fmode=$('#f-rcmode').value,q=$('#f-rcq').value.toLowerCase();
+  const rows=DB.rcpts.filter(r=>(!fs||r.site===fs)&&(!fmode||(isCash(r.mode)?'cash':'bank')===fmode)&&(!q||(r.site+' '+clientOf(r.site)+' '+(r.ref||'')+' '+(r.rem||'')).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+  $('#rcl').innerHTML=rows.map(r=>`<tr><td>${fd(r.date)}</td><td>${esc(clientOf(r.site))}</td><td>${esc(r.site)}</td><td>${esc(r.mode||'')}</td><td>${esc(r.ref||'')}</td><td>${esc(r.rem||'')}</td><td class="r"><b>${fm(r.amt)}</b></td><td class="r"><button class="btn sm" data-a="rcedit" data-id="${r.id}">Edit</button> <button class="btn sm red" data-a="rcdel" data-id="${r.id}" aria-label="Delete receipt">✕</button></td></tr>`).join('')
+    ||'<tr><td colspan="8" class="empty">No receipts to show.</td></tr>';
+  if(rows.length)$('#rcl').innerHTML+=`<tr class="tot"><td colspan="6">Total (${rows.length} receipts)</td><td class="r">${fm(sum(rows,r=>n(r.amt)))}</td><td></td></tr>`;
+}
+
+/* ---------- heads & major heads ---------- */
+let emj=null,ehd=null;
+function rHeads(){
+  const sel=$('#hd-maj'),v=sel.value;sel.innerHTML=opts(DB.majors,DB.majors.length?'Select major head':'Add a major head first',v);
+  $('#mjl').innerHTML=DB.majors.map((m,i)=>`<tr><td><b>${esc(m)}</b></td><td class="r">${DB.heads.filter(h=>h.major===m).length}</td><td class="r"><button class="btn sm" data-a="mjedit" data-i="${i}">Edit</button> <button class="btn sm red" data-a="mjdel" data-i="${i}" aria-label="Delete major head">✕</button></td></tr>`).join('')||'<tr><td colspan="3" class="empty">No major heads yet.</td></tr>';
+  let h='';
+  DB.majors.forEach(m=>{
+    const L=DB.heads.filter(x=>x.major===m).sort((a,b)=>a.name.localeCompare(b.name));
+    h+=`<tr class="gh"><td colspan="2">${esc(m)}</td><td class="r">${sum(L,x=>DB.exps.filter(e=>nk(e.cat)===nk(x.name)).length)}</td><td class="r">${fr(sum(L,x=>sum(DB.exps.filter(e=>nk(e.cat)===nk(x.name)),e=>n(e.amt))))}</td><td></td></tr>`;
+    L.forEach(x=>{const U=DB.exps.filter(e=>nk(e.cat)===nk(x.name));
+      h+=`<tr><td></td><td>${esc(x.name)}</td><td class="r">${U.length}</td><td class="r">${fr(sum(U,e=>n(e.amt)))}</td><td class="r"><button class="btn sm" data-a="hdedit" data-id="${x.id}">Edit</button> <button class="btn sm red" data-a="hddel" data-id="${x.id}" aria-label="Delete head">✕</button></td></tr>`});
+  });
+  $('#hdl').innerHTML=h||'<tr><td colspan="5" class="empty">No heads yet. Add a major head, then add heads under it.</td></tr>';
+}
+function saveMajor(){
+  const name=nm($('#mj-name').value);
+  if(!name)return alert('Enter the major head name.');
+  if(DB.majors.some((m,i)=>i!==emj&&nk(m)===nk(name)))return alert('The major head "'+name+'" already exists. Duplicate names are not allowed.');
+  if(emj!=null){const old=DB.majors[emj];DB.majors[emj]=name;DB.heads.forEach(h=>{if(h.major===old)h.major=name});DB.exps.forEach(x=>{if(x.major===old)x.major=name})}
+  else DB.majors.push(name);
+  save();clearMajor();fill();rHeads();toast('Major head saved');
+}
+function clearMajor(){emj=null;$('#mj-name').value='';$('#mj-save').textContent='Save major head';$('#mj-cancel').hidden=true;$('#mj-h').textContent='Add major head'}
+function saveHead(){
+  const name=nm($('#hd-name').value),major=$('#hd-maj').value;
+  if(!name)return alert('Enter the head name.');
+  if(!major)return alert(DB.majors.length?'Select the major head this head belongs to.':'Add a major head first.');
+  const d=DB.heads.find(h=>h.id!==ehd&&nk(h.name)===nk(name));
+  if(d)return alert('The head "'+d.name+'" already exists under "'+d.major+'". Duplicate names are not allowed.');
+  if(ehd){const h=DB.heads.find(x=>x.id===ehd),old=h.name;h.name=name;h.major=major;DB.exps.forEach(x=>{if(nk(x.cat)===nk(old)){x.cat=name;x.major=major}})}
+  else DB.heads.push({id:uid(),name,major});
+  save();clearHead();fill();rHeads();toast('Head saved');
+}
+function clearHead(){ehd=null;$('#hd-name').value='';$('#hd-save').textContent='Save head';$('#hd-cancel').hidden=true;$('#hd-h').textContent='Add head'}
+
+/* ---------- bills raised to clients ---------- */
+let ei=null;
+function ibSites(sel){
+  const cl=$('#ib-cl').value,el=$('#ib-site'),v=sel!=null?sel:el.value;
+  const L=cl?DB.clients.filter(c=>c.name===cl).map(c=>c.site):[];
+  if(sel&&!L.includes(sel))L.push(sel);
+  el.innerHTML=opts(L,cl||sel?(L.length?'Select site':'No site'):'Select client first',v);
+  if(L.length===1&&!el.value)el.value=L[0];
+}
+/* receipts are applied to the oldest client bills of each site first */
+function ibList(asof){
+  const out=[],by=grp(DB.ibills.filter(b=>!asof||b.date<=asof),b=>b.site||'');
+  Object.keys(by).forEach(s=>{
+    let rem=sum(DB.rcpts.filter(r=>(r.site||'')===s&&(!asof||r.date<=asof)),r=>n(r.amt));
+    by[s].slice().sort((a,b)=>a.date.localeCompare(b.date)||(a.no||'').localeCompare(b.no||'')).forEach(b=>{
+      const p=r2(Math.min(rem,b.amt));rem=r2(rem-p);out.push({b,paid:p,bal:r2(b.amt-p)});
+    });
+  });
+  return out;
+}
+function saveIb(){
+  const date=$('#ib-date').value,site=$('#ib-site').value,no=$('#ib-no').value.trim(),amt=n($('#ib-amt').value);
+  if(!$('#ib-cl').value&&!site)return alert('Select the client.');
+  if(!site)return alert('Select the site.');
+  if(!date)return alert('Enter the bill date.');
+  if(!(amt>0))return alert('Enter the taxable amount (and GST %, if any).');
+  if(no&&DB.ibills.some(b=>b.id!==ei&&b.site===site&&nk(b.no)===nk(no)))return alert('Bill no. "'+no+'" is already entered for this site. Duplicate entries are not allowed.');
+  if(!no&&DB.ibills.some(b=>b.id!==ei&&!nk(b.no)&&b.site===site&&b.date===date&&n(b.amt)===amt))return alert('A client bill with the same site, date and amount is already entered. Duplicate entries are not allowed.');
+  const o={date,site,no,amt,base:n($('#ib-base').value),gstp:n($('#ib-gstp').value),gst:n($('#ib-gst').value),due:$('#ib-due').value,rem:$('#ib-rem').value.trim()};
+  if(ei)Object.assign(DB.ibills.find(b=>b.id===ei),o);else DB.ibills.push({id:uid(),...o});
+  save();clearIb(true);fill();rIb();toast('Client bill saved');
+}
+function clearIb(keep){
+  ei=null;['ib-no','ib-base','ib-gstp','ib-gst','ib-amt','ib-due','ib-rem'].forEach(i=>$('#'+i).value='');
+  if(!keep){$('#ib-date').value=today();$('#ib-cl').value='';ibSites('')}
+  $('#ib-save').textContent='Save client bill';$('#ib-cancel').hidden=true;$('#ib-h').textContent='Enter bill raised to client';
+}
+function editIb(id){
+  const b=DB.ibills.find(x=>x.id===id),c=siteClient(b.site);ei=id;
+  $('#ib-date').value=b.date;$('#ib-cl').value=c?c.name:'';ibSites(b.site);$('#ib-site').value=b.site;
+  $('#ib-no').value=b.no||'';$('#ib-base').value=baseOf2(b);$('#ib-gstp').value=b.gstp||'';$('#ib-gst').value=b.gst||'';$('#ib-amt').value=b.amt;$('#ib-due').value=b.due||'';$('#ib-rem').value=b.rem||'';
+  $('#ib-save').textContent='Update client bill';$('#ib-cancel').hidden=false;$('#ib-h').textContent='Edit client bill';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function rIb(){
+  const fs=$('#f-ibsite').value,st=$('#f-ibst').value,q=$('#f-ibq').value.toLowerCase(),td=today();
+  const rows=ibList().filter(x=>(!fs||x.b.site===fs)&&(!q||(x.b.site+' '+clientOf(x.b.site)+' '+(x.b.no||'')+' '+(x.b.rem||'')).toLowerCase().includes(q))&&(!st||(st==='out'?x.bal>0.005:x.bal<=0.005))).sort((a,b)=>b.b.date.localeCompare(a.b.date));
+  let tx=0,tg=0,ta=0,tp=0,tb=0;
+  $('#ibl').innerHTML=rows.map(({b,paid,bal})=>{tx+=baseOf2(b);tg+=gstOf(b);ta+=b.amt;tp+=paid;tb+=bal;
+    const od=b.due&&b.due<td&&bal>0.005;
+    return`<tr><td>${fd(b.date)}</td><td>${esc(clientOf(b.site))}</td><td>${esc(b.site)}</td><td>${esc(b.no||'–')}</td><td>${b.due?fd(b.due):'–'}${od?' <span class="bad">overdue</span>':''}</td><td class="r">${fm(baseOf2(b))}</td><td class="r">${gstOf(b)>0?fm(gstOf(b))+(b.gstp?'<div class="mut" style="font-size:10px">'+b.gstp+'%</div>':''):'–'}</td><td class="r">${fm(b.amt)}</td><td class="r">${fm(paid)}</td><td class="r ${bal>0.005?'warn':'ok'}"><b>${fm(bal)}</b></td><td class="r"><button class="btn sm" data-a="ibedit" data-id="${b.id}">Edit</button> <button class="btn sm red" data-a="ibdel" data-id="${b.id}" aria-label="Delete client bill">✕</button></td></tr>`}).join('')
+    ||'<tr><td colspan="11" class="empty">No client bills to show.</td></tr>';
+  if(rows.length)$('#ibl').innerHTML+=`<tr class="tot"><td colspan="5">Total (${rows.length} bills)</td><td class="r">${fm(tx)}</td><td class="r">${fm(tg)}</td><td class="r">${fm(ta)}</td><td class="r">${fm(tp)}</td><td class="r">${fm(tb)}</td><td></td></tr>`;
+}
+
+/* ---------- cash book ---------- */
+let CBCSV=[];
+function cbLoad(){
+  $('#cb-ocash').value=n(DB.cb.cash)||'';$('#cb-obank').value=n(DB.cb.bank)||'';$('#cb-odate').value=DB.cb.date||'';
+  if(!$('#cb-to').value)$('#cb-to').value=today();
+}
+function cbTxns(){
+  const T=[];
+  DB.rcpts.forEach(r=>T.push({d:r.date,isIn:true,txt:'Receipt from '+(clientOf(r.site)||'client'),site:r.site||'',mode:r.mode||'',ref:[r.ref,r.rem].filter(Boolean).join(' · '),amt:n(r.amt)}));
+  DB.pays.forEach(p=>T.push({d:p.date,isIn:false,txt:(p.type==='vendor'?'Paid to vendor — ':'Wages paid — ')+p.party+(p.ent?' ('+p.ent+')':''),site:p.site||'All sites',mode:p.mode||'',ref:[p.ref,p.rem].filter(Boolean).join(' · '),amt:n(p.amt)}));
+  DB.bills.forEach(b=>(b.pay||[]).forEach(x=>{if(!x.pid)T.push({d:x.d,isIn:false,txt:'Paid to vendor — '+b.ven+' (Bill '+(b.no||'–')+')',site:b.site||'',mode:x.m||'',ref:x.r||'',amt:n(x.a)})}));
+  DB.wages.forEach(w=>{if(n(w.paid)>0)T.push({d:w.date,isIn:false,txt:'Wages paid — '+w.worker+' (earlier entry)',site:w.site||'',mode:'',ref:'',amt:n(w.paid)})});
+  DB.exps.forEach(x=>T.push({d:x.date,isIn:false,txt:'Expense — '+x.cat+(x.desc?': '+x.desc:'')+(x.to?' · '+x.to:''),site:x.site||'',mode:x.mode||'',ref:x.ref||'',amt:n(x.amt)}));
+  return T.filter(t=>t.d&&t.amt>0);
+}
+function cbRep(){
+  const v=$('#cb-view').value,from=$('#cb-from').value,to=$('#cb-to').value||today(),od=DB.cb.date||'',C=DB.cb;
+  const g=t=>isCash(t.mode)?'cash':'bank',sg=t=>t.isIn?t.amt:-t.amt,iv=t=>!v||g(t)===v;
+  const all=cbTxns().filter(t=>!od||t.d>=od).sort((a,b)=>a.d.localeCompare(b.d)||(b.isIn-a.isIn));
+  const baseOf=k=>k==='cash'?n(C.cash):k==='bank'?n(C.bank):n(C.cash)+n(C.bank);
+  const open=r2(baseOf(v)+sum(from?all.filter(t=>iv(t)&&t.d<from):[],sg));
+  const rows=all.filter(t=>iv(t)&&(!from||t.d>=from)&&t.d<=to);
+  let bal=open,tin=0,tout=0;
+  CBCSV=[['CASH BOOK ('+(from?fd(from):'start')+' to '+fd(to)+')'],['Date','Particulars','Site','Mode','Reference','Money in','Money out','Balance'],['','Opening balance','','','','','',open]];
+  const body=rows.map(t=>{
+    bal=r2(bal+sg(t));if(t.isIn)tin+=t.amt;else tout+=t.amt;
+    CBCSV.push([fd(t.d),t.txt,t.site,t.mode,t.ref,t.isIn?t.amt:'',t.isIn?'':t.amt,bal]);
+    return`<tr><td>${fd(t.d)}</td><td>${esc(t.txt)}</td><td>${esc(t.site)}</td><td>${esc([t.mode,t.ref].filter(Boolean).join(' · '))}</td><td class="r ok">${t.isIn?fr(t.amt):''}</td><td class="r">${t.isIn?'':fr(t.amt)}</td><td class="r ${bal<-0.005?'bad':''}">${fr(bal)}</td></tr>`}).join('');
+  tin=r2(tin);tout=r2(tout);const close=r2(bal);
+  CBCSV.push(['','Total for the period','','','',tin,tout,close]);
+  const vt={'':'All modes',cash:'Cash only',bank:'Bank / UPI / Cheque only'}[v];
+  const cc=r2(baseOf('cash')+sum(all.filter(t=>g(t)==='cash'&&t.d<=to),sg)),cbk=r2(baseOf('bank')+sum(all.filter(t=>g(t)==='bank'&&t.d<=to),sg));
+  const gen=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+  setGen('Generated on '+gen+' · Bills & Wages Ledger · Cash book');$('#cb-out').innerHTML=`<div class="rt">Cash Book</div><div class="rhead">${from?fd(from):'Start'} to ${fd(to)} · View: ${vt}${od?' · Opening balance as on '+fd(od):''} · Amounts in ₹</div>
+  <div class="cards"><div class="kc"><small>Opening balance</small><b>${fm(open)}</b></div><div class="kc"><small>Money in</small><b class="ok">${fm(tin)}</b></div><div class="kc"><small>Money out</small><b class="bad">${fm(tout)}</b></div><div class="kc"><small>Closing balance</small><b class="${close<-0.005?'bad':''}">${fm(close)}</b></div></div>`
+  +(all.length||open?`<div class="card"><div class="sc"><table class="tbl"><thead><tr><th>Date</th><th>Particulars</th><th>Site</th><th>Mode / ref</th><th class="r">Money in</th><th class="r">Money out</th><th class="r">Balance</th></tr></thead><tbody><tr class="gh"><td>${from?fd(from):od?fd(od):'–'}</td><td colspan="5">Opening balance</td><td class="r">${fr(open)}</td></tr>${body||'<tr><td colspan="7" class="empty">No transactions in this period.</td></tr>'}<tr class="tot"><td colspan="4">Total for the period</td><td class="r">${fr(tin)}</td><td class="r">${fr(tout)}</td><td class="r">${fr(close)}</td></tr></tbody></table></div>${v?'':`<p class="mut" style="font-size:12px;margin:10px 0 0">Closing as on ${fd(to)} — Cash: <b>${fm(cc)}</b> · Bank / UPI / Cheque: <b>${fm(cbk)}</b></p>`}</div>`:'<div class="card empty">No transactions yet. Record payments, expenses and receipts, and they will appear here.</div>')
+  +`<div class="gen">Generated on ${gen} · Bills &amp; Wages Ledger</div>`;
+}
+$('#cb-csv').onclick=()=>{
+  cbRep();
+  const t=CBCSV.map(r=>r.map(v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'}));a.download='cash-book-'+today()+'.csv';a.click();
+};
+$('#cb-pdf').onclick=()=>{cbRep();exportPdf('#cb-out','cash-book-'+today()+'.pdf','cb')};
+$('#cb-print').onclick=()=>{cbRep();print()};
+$('#cb-osave').onclick=()=>{DB.cb={cash:n($('#cb-ocash').value),bank:n($('#cb-obank').value),date:$('#cb-odate').value};save();cbRep();toast('Opening balance saved')};
+
+/* ---------- reports ---------- */
+let CSV=[];
+const siteName=s=>esc(s||'(No site)');
+const clientOf=s=>{const c=siteClient(s);return c?c.name:''};
+const siteHead=s=>{const c=siteClient(s);return siteName(s)+(c?` <small class="mut" style="font-weight:600">· Client: ${esc(c.name)}${c.addr?' · '+esc(c.addr):''}</small>`:'')};
+const aggCells=L=>`<td class="r">${L.length}</td><td class="r">${fr(sum(L,x=>x.b.amt))}</td><td class="r">${fr(sum(L,x=>x.paid))}</td><td class="r warn">${fr(sum(L,x=>x.bal))}</td>`;
+const VH=f=>`<thead><tr><th>${f}</th><th class="r">Bills</th><th class="r">Billed</th><th class="r">Paid</th><th class="r">Outstanding</th></tr></thead>`;
+const card=(title,amt,thead,body,label)=>`<div class="card"><h2>${title}${amt!=null?` <span class="warn" style="float:right">${label?label+' ':''}${fm(amt)}</span>`:''}</h2><div class="sc"><table class="tbl">${thead}<tbody>${body}</tbody></table></div></div>`;
+const openBills=(asof,fe,siteOk)=>DB.bills.filter(b=>b.date<=asof&&(!fe||b.ent===fe)&&siteOk(b.site)).map(b=>{const paid=paidOf(b,asof);return{b,paid,bal:r2(b.amt-paid)}}).filter(x=>x.bal>0.005);
+const openWages=(asof,siteOk)=>DB.wages.filter(w=>w.date<=asof&&siteOk(w.site)).map(w=>{const paid=wpaid(w,asof);return{w,paid,bal:r2(w.amt-paid)}});
+const byDate=(a,b)=>a.b.date.localeCompare(b.b.date);
+
+function brow(x,asof,showSite){
+  const od=x.b.due&&x.b.due<asof;
+  return`<tr class="br"><td>Bill ${esc(x.b.no||'–')} · ${fd(x.b.date)}${x.b.due?' · due '+fd(x.b.due):''}${gstOf(x.b)>0?' · incl. GST '+fr(gstOf(x.b)):''}${od?` <span class="bad">overdue ${dd(asof,x.b.due)} d</span>`:''}${showSite&&x.b.site?' · '+esc(x.b.site):''}</td><td></td><td class="r">${fr(x.b.amt)}</td><td class="r">${fr(x.paid)}</td><td class="r">${fr(x.bal)}</td></tr>`;
+}
+function vblock(L,asof,det,showSite){
+  let h='';const bv=grp(L,x=>x.b.ven);
+  Object.keys(bv).map(v=>({v,L:bv[v],bal:sum(bv[v],x=>x.bal)})).sort((a,b)=>b.bal-a.bal).forEach(o=>{
+    h+=`<tr class="vr"><td style="padding-left:20px">${esc(o.v)}</td>${aggCells(o.L)}</tr>`;
+    if(det)o.L.slice().sort(byDate).forEach(x=>h+=brow(x,asof,showSite));
+  });
+  return h;
+}
+
+function vendorRep(asof,fe,siteOk,det,view){
+  const B=openBills(asof,fe,siteOk);
+  const c=[['VENDOR OUTSTANDING REPORT — '+(view==='site'?'SITE-WISE':'ENTITY-WISE')+' (as on '+fd(asof)+')'],['Entity','Site','Client','Vendor','Bill no.','Bill date','Due date','Taxable amount','GST','Bill amount (incl. GST)','Paid','Outstanding']];
+  B.slice().sort((a,b)=>a.b.ent.localeCompare(b.b.ent)||(a.b.site||'').localeCompare(b.b.site||'')||a.b.ven.localeCompare(b.b.ven)||a.b.date.localeCompare(b.b.date)).forEach(x=>c.push([x.b.ent,x.b.site||'',clientOf(x.b.site),x.b.ven,x.b.no||'',fd(x.b.date),fd(x.b.due),baseOf2(x.b),gstOf(x.b),x.b.amt,x.paid,x.bal]));
+  let h='';
+  if(view==='site'){
+    const bs=grp(B,x=>x.b.site||'');
+    Object.keys(bs).sort((a,b)=>a.localeCompare(b)).forEach(s=>{
+      const SL=bs[s],be=grp(SL,x=>x.b.ent);let body='';
+      Object.keys(be).sort((a,b)=>a.localeCompare(b)).forEach(e=>{body+=`<tr class="gh"><td>${esc(e)}</td>${aggCells(be[e])}</tr>`+vblock(be[e],asof,det,false)});
+      body+=`<tr class="tot"><td>Total — ${siteName(s)}</td>${aggCells(SL)}</tr>`;
+      h+=card(siteHead(s),sum(SL,x=>x.bal),VH('Entity / Vendor'),body);
+    });
+  }else{
+    const be=grp(B,x=>x.b.ent);
+    Object.keys(be).sort((a,b)=>a.localeCompare(b)).forEach(e=>{
+      const EL=be[e];
+      h+=card(esc(e),sum(EL,x=>x.bal),VH('Vendor'),vblock(EL,asof,det,true)+`<tr class="tot"><td>Total — ${esc(e)}</td>${aggCells(EL)}</tr>`);
+    });
+  }
+  const groups=new Set(B.map(x=>view==='site'?(x.b.site||''):x.b.ent)).size;
+  if(groups>1)h+=card('Grand total',null,VH('All '+(view==='site'?'sites':'entities')),`<tr class="tot"><td>Total</td>${aggCells(B)}</tr>`);
+  return{h:h||'<div class="card empty">No outstanding vendor bills for the selected filters.</div>',out:sum(B,x=>x.bal),c};
+}
+
+function labourRep(asof,siteOk,det){
+  const W=openWages(asof,siteOk);
+  const c=[['WORKER / LABOUR REPORT — WORKER-WISE, SITE-WISE (as on '+fd(asof)+')'],['Worker','Site','Client','Date','Trade','Days','Rate','Wage amount','Paid','Outstanding']];
+  W.slice().sort((a,b)=>a.w.worker.localeCompare(b.w.worker)||(a.w.site||'').localeCompare(b.w.site||'')||a.w.date.localeCompare(b.w.date)).forEach(x=>c.push([x.w.worker,x.w.site||'',clientOf(x.w.site),fd(x.w.date),x.w.trade||'',x.w.days||'',x.w.rate||'',x.w.amt,x.paid,x.bal]));
+  const bw=grp(W,x=>x.w.worker);
+  const wk=Object.keys(bw).map(k=>({k,L:bw[k],a:sum(bw[k],x=>x.w.amt),p:sum(bw[k],x=>x.paid)})).sort((a,b)=>(b.a-b.p)-(a.a-a.p)||a.k.localeCompare(b.k));
+  let body='';
+  wk.forEach(o=>{
+    body+=`<tr class="gh"><td>${esc(o.k)}</td><td>${esc((o.L.find(x=>x.w.trade)||{w:{}}).w.trade||'')}</td><td class="r">${sum(o.L,x=>x.w.days)||''}</td><td class="r">${fr(o.a)}</td><td class="r">${fr(o.p)}</td><td class="r ${o.a-o.p>0.005?'warn':'ok'}">${fr(o.a-o.p)}</td></tr>`;
+    const bs=grp(o.L,x=>x.w.site||'');
+    Object.keys(bs).sort((a,b)=>a.localeCompare(b)).forEach(s=>{
+      const SL=bs[s],sa=sum(SL,x=>x.w.amt),sp=sum(SL,x=>x.paid);
+      body+=`<tr class="vr"><td style="padding-left:20px">${siteHead(s)}</td><td></td><td class="r">${sum(SL,x=>x.w.days)||''}</td><td class="r">${fr(sa)}</td><td class="r">${fr(sp)}</td><td class="r ${sa-sp>0.005?'warn':'ok'}">${fr(sa-sp)}</td></tr>`;
+      if(det)SL.slice().sort((a,b)=>a.w.date.localeCompare(b.w.date)).forEach(x=>{body+=`<tr class="br"><td>${fd(x.w.date)}${x.w.rate?' · '+fm(x.w.rate)+'/day':''}${x.w.rem?' · '+esc(x.w.rem):''}</td><td></td><td class="r">${x.w.days||''}</td><td class="r">${fr(x.w.amt)}</td><td class="r">${fr(x.paid)}</td><td class="r">${fr(x.bal)}</td></tr>`});
+    });
+  });
+  const A=sum(W,x=>x.w.amt),P=sum(W,x=>x.paid);
+  body+=`<tr class="tot"><td>Total — all workers</td><td></td><td class="r">${sum(W,x=>x.w.days)||''}</td><td class="r">${fr(A)}</td><td class="r">${fr(P)}</td><td class="r">${fr(A-P)}</td></tr>`;
+  const thead='<thead><tr><th>Worker / site</th><th>Trade</th><th class="r">Days</th><th class="r">Total wages</th><th class="r">Paid</th><th class="r">Outstanding</th></tr></thead>';
+  return{h:wk.length?card('Workers — site-wise outstanding under each worker',A-P,thead,body):'<div class="card empty">No wage entries for the selected filters.</div>',out:A-P,c};
+}
+
+function dueRep(asof,fe,siteOk){
+  const B=openBills(asof,fe,siteOk),lim=addDays(asof,7);
+  const age=x=>x.b.due?x.b.due:'';
+  const bkt=x=>!x.b.due?3:x.b.due<asof?0:x.b.due<=lim?1:2;
+  const NAMES=['Overdue (due date passed)','Due within 7 days','Due later','No due date set'];
+  const c=[['DUE REPORT — VENDOR BILLS (as on '+fd(asof)+')'],['Status','Due date','Entity','Vendor','Bill no.','Site','Client','Bill date','Outstanding','Days overdue / to due']];
+  const bb=grp(B,bkt);let body='';
+  const status=(i,x)=>i===0?'overdue '+dd(asof,x.b.due)+' d':i===3?'–':dd(x.b.due,asof)===0?'due today':'due in '+dd(x.b.due,asof)+' d';
+  [0,1,2,3].filter(i=>bb[i]).forEach(i=>{
+    const L=bb[i].slice().sort((a,b)=>(a.b.due||'9999').localeCompare(b.b.due||'9999')||a.b.date.localeCompare(b.b.date));
+    body+=`<tr class="gh"><td colspan="6">${NAMES[i]} · ${L.length} bill${L.length>1?'s':''}</td><td class="r">${fr(sum(L,x=>x.bal))}</td><td></td></tr>`;
+    L.forEach(x=>{
+      body+=`<tr><td>${x.b.due?fd(x.b.due):'–'}</td><td>${esc(x.b.ent)}</td><td>${esc(x.b.ven)}</td><td>${esc(x.b.no||'–')}</td><td>${esc(x.b.site||'')}</td><td>${fd(x.b.date)}</td><td class="r"><b>${fr(x.bal)}</b></td><td class="${i===0?'bad':''}">${status(i,x)}</td></tr>`;
+      c.push([NAMES[i],fd(x.b.due),x.b.ent,x.b.ven,x.b.no||'',x.b.site||'',clientOf(x.b.site),fd(x.b.date),x.bal,status(i,x)]);
+    });
+  });
+  const outV=sum(B,x=>x.bal),bs=k=>sum(bb[k]||[],x=>x.bal);
+  body+=`<tr class="tot"><td colspan="6">Total vendor dues</td><td class="r">${fr(outV)}</td><td></td></tr>`;
+  const kp=`<div class="cards"><div class="kc"><small>Overdue</small><b class="bad">${fm(bs(0))}</b></div><div class="kc"><small>Due within 7 days</small><b class="warn">${fm(bs(1))}</b></div><div class="kc"><small>Due later</small><b>${fm(bs(2))}</b></div><div class="kc"><small>No due date</small><b>${fm(bs(3))}</b></div></div>`;
+  const hv=B.length?kp+card('Vendor bills — due position',outV,'<thead><tr><th>Due date</th><th>Entity</th><th>Vendor</th><th>Bill no.</th><th>Site</th><th>Bill date</th><th class="r">Outstanding</th><th>Status</th></tr></thead>',body):'<div class="card empty">No outstanding vendor bills for the selected filters.</div>';
+  const W=openWages(asof,siteOk).filter(x=>x.bal>0.005);
+  c.push([],['DUE REPORT — LABOUR WAGES PENDING (as on '+fd(asof)+')'],['Worker','Site','Client','Pending entries','Oldest pending since','Days pending','Outstanding']);
+  const bw=grp(W,x=>x.w.worker+'\u0001'+(x.w.site||''));
+  const rows=Object.values(bw).map(L=>{const old=L.map(x=>x.w.date).sort()[0];return{k:L[0].w.worker,s:L[0].w.site||'',n:L.length,old,days:dd(asof,old),bal:sum(L,x=>x.bal)}}).sort((a,b)=>b.bal-a.bal||a.k.localeCompare(b.k));
+  rows.forEach(r=>c.push([r.k,r.s,clientOf(r.s),r.n,fd(r.old),r.days,r.bal]));
+  const outL=sum(rows,r=>r.bal);
+  const lb=rows.map(r=>`<tr><td>${esc(r.k)}</td><td>${siteHead(r.s)}</td><td class="r">${r.n}</td><td>${fd(r.old)}</td><td class="r">${r.days} d</td><td class="r warn"><b>${fr(r.bal)}</b></td></tr>`).join('')+`<tr class="tot"><td colspan="5">Total labour dues</td><td class="r">${fr(outL)}</td></tr>`;
+  const hl=rows.length?card('Labour wages — pending',outL,'<thead><tr><th>Worker</th><th>Site</th><th class="r">Pending entries</th><th>Oldest pending since</th><th class="r">Days pending</th><th class="r">Outstanding</th></tr></thead>',lb):'<div class="card empty">No pending labour wages for the selected filters.</div>';
+  return{h:hv+hl,out:outV+outL,c};
+}
+
+/* consolidated: total expenses incurred, headwise under major heads */
+function consTable(vb,wg,xs){
+  const parts=[];
+  const mk=(L,key,a,p)=>{const g=grp(L,key);return Object.keys(g).map(k=>({h:k,inc:sum(g[k],a),paid:sum(g[k],p)}))};
+  if(vb.length)parts.push({m:'Vendor bills',hs:mk(vb,x=>x.b.ven,x=>x.b.amt,x=>x.paid)});
+  if(wg.length)parts.push({m:'Labour wages',hs:mk(wg,x=>x.w.trade||'Unspecified trade',x=>x.w.amt,x=>x.paid)});
+  [...DB.majors,...xs.map(majorOf)].filter((m,i,a)=>a.indexOf(m)===i).forEach(m=>{const L=xs.filter(x=>majorOf(x)===m);if(L.length)parts.push({m,hs:mk(L,x=>x.cat,x=>x.amt,x=>x.amt)})});
+  parts.forEach(p=>{p.hs.sort((a,b)=>b.inc-a.inc||a.h.localeCompare(b.h));p.inc=sum(p.hs,h=>h.inc);p.paid=sum(p.hs,h=>h.paid)});
+  const inc=r2(sum(parts,p=>p.inc)),paid=r2(sum(parts,p=>p.paid));
+  let body='';
+  parts.forEach(p=>{
+    body+=`<tr class="gh"><td>${esc(p.m)}</td><td class="r">${fr(p.inc)}</td><td class="r">${fr(p.paid)}</td><td class="r">${fr(p.inc-p.paid)}</td></tr>`;
+    p.hs.forEach(h=>{body+=`<tr class="br"><td>${esc(h.h)}</td><td class="r">${fr(h.inc)}</td><td class="r">${fr(h.paid)}</td><td class="r">${fr(h.inc-h.paid)}</td></tr>`});
+  });
+  body+=`<tr class="tot"><td>Total expenses incurred</td><td class="r">${fr(inc)}</td><td class="r">${fr(paid)}</td><td class="r">${fr(inc-paid)}</td></tr>`;
+  return{parts,inc,paid,body};
+}
+function consRep(asof,fe,siteOk){
+  const B=DB.bills.filter(b=>b.date<=asof&&(!fe||b.ent===fe)).map(b=>{const paid=paidOf(b,asof);return{b,paid,bal:r2(b.amt-paid)}});
+  const W=openWages(asof,()=>true),X=DB.exps.filter(x=>x.date<=asof),R=DB.rcpts.filter(r=>r.date<=asof),IB=DB.ibills.filter(b=>b.date<=asof);
+  let S=sites();if(B.some(x=>!x.b.site)||W.some(x=>!x.w.site)||X.some(x=>!x.site))S=[...S,''];
+  const rows=S.filter(siteOk).map(s=>{
+    const vb=B.filter(x=>(x.b.site||'')===s),wg=W.filter(x=>(x.w.site||'')===s),xs=X.filter(x=>(x.site||'')===s);
+    const rc=sum(R.filter(r=>(r.site||'')===s),r=>n(r.amt)),bl=sum(IB.filter(b=>(b.site||'')===s),b=>n(b.amt)),bg=sum(IB.filter(b=>(b.site||'')===s),b=>gstOf(b));
+    return{s,cn:clientOf(s),vb,wg,xs,rc,bl,bg,T:consTable(vb,wg,xs)};
+  }).filter(r=>r.T.inc>0.005||r.rc>0.005||r.bl>0.005).sort((a,b)=>a.s.localeCompare(b.s));
+  const c=[['SITE-WISE CONSOLIDATED REPORT — TOTAL EXPENSES INCURRED, HEADWISE (as on '+fd(asof)+')'],['Site','Client','Major head','Head','Incurred','Paid','Balance payable']];
+  const csvAdd=(s,cn,T,rc,bl)=>{
+    T.parts.forEach(p=>{c.push([s,cn,p.m,'(Total)',p.inc,p.paid,r2(p.inc-p.paid)]);p.hs.forEach(h=>c.push([s,cn,p.m,h.h,h.inc,h.paid,r2(h.inc-h.paid)]))});
+    c.push([s,cn,'TOTAL EXPENSES INCURRED','',T.inc,T.paid,r2(T.inc-T.paid)],[s,cn,'BILLED TO CLIENT (incl. GST)','',bl],[s,cn,'RECEIVED FROM CLIENT','',rc],[s,cn,'BALANCE RECEIVABLE','',r2(bl-rc)]);
+  };
+  const thead='<thead><tr><th>Major head / Head</th><th class="r">Incurred</th><th class="r">Paid</th><th class="r">Balance payable</th></tr></thead>';
+  const summ=(inc,bl,rc,bg)=>`<div class="sc sumbox"><table class="tbl"><tbody><tr><td>Total expenses incurred</td><td class="r">${fr(inc)}</td></tr><tr><td>Billed to client${bg>0?' (incl. GST)':''}</td><td class="r">${fr(bl)}</td></tr>${bg>0?`<tr><td class="mut">of which GST</td><td class="r mut">${fr(bg)}</td></tr>`:''}<tr><td>Received from client</td><td class="r">${fr(rc)}</td></tr><tr class="tot"><td>Balance receivable</td><td class="r">${fr(bl-rc)}</td></tr></tbody></table></div>`;
+  const cardC=(title,T,bl,rc,bg)=>`<div class="card"><h2>${title}<span class="warn" style="float:right">Total expenses ${fm(T.inc)}</span></h2><div class="sc"><table class="tbl">${thead}<tbody>${T.body}</tbody></table></div>${summ(T.inc,bl,rc,bg)}</div>`;
+  let h='';
+  rows.forEach(r=>{csvAdd(r.s,r.cn,r.T,r.rc,r.bl);h+=cardC(siteHead(r.s),r.T,r.bl,r.rc,r.bg)});
+  if(rows.length>1){
+    const T=consTable(rows.flatMap(r=>r.vb),rows.flatMap(r=>r.wg),rows.flatMap(r=>r.xs)),rc=sum(rows,r=>r.rc),bl=sum(rows,r=>r.bl),bg=sum(rows,r=>r.bg);
+    csvAdd('ALL SITES','',T,rc,bl);h+=cardC('All sites — combined',T,bl,rc,bg);
+  }
+  if(h)h+='<p class="mut" style="font-size:12px;margin:-6px 0 0">Vendor bills are grouped by vendor and labour wages by trade. Other expenses are grouped by category under their major head and are treated as paid when entered. Balance receivable = billed to client − received from client (a negative figure means an advance received).</p>';
+  return{h:h||'<div class="card empty">No data for the selected filters.</div>',out:sum(rows,r=>r.T.inc-r.T.paid),c};
+}
+
+function clientRep(asof,fe,siteOk,det){
+  const B=DB.bills.filter(b=>b.date<=asof&&(!fe||b.ent===fe)).map(b=>{const paid=paidOf(b,asof);return{b,paid,bal:r2(b.amt-paid)}});
+  const W=openWages(asof,()=>true),X=DB.exps.filter(x=>x.date<=asof),R=DB.rcpts.filter(r=>r.date<=asof),IBL=ibList(asof);
+  let S=sites();if(B.some(x=>!x.b.site)||W.some(x=>!x.w.site)||X.some(x=>!x.site))S=[...S,''];
+  const rows=S.filter(siteOk).map(s=>{
+    const vb=B.filter(x=>(x.b.site||'')===s),wg=W.filter(x=>(x.w.site||'')===s),cl=siteClient(s),ib=IBL.filter(x=>(x.b.site||'')===s);
+    const ba=sum(vb,x=>x.b.amt),vd=sum(vb.filter(x=>x.bal>0.005),x=>x.bal),wa=sum(wg,x=>x.w.amt),wp=sum(wg,x=>x.paid),xe=sum(X.filter(x=>(x.site||'')===s),x=>x.amt),rec=sum(R.filter(r=>(r.site||'')===s),r=>n(r.amt));
+    const cost=ba+wa+xe,bil=sum(ib,x=>x.b.amt);
+    return{s,ib,cn:cl?cl.name:'Unassigned',addr:cl?cl.addr:'',ba,wa,xe,cost,bil,bgst:sum(ib,x=>gstOf(x.b)),rec,recv:r2(bil-rec),pay:r2(vd+wa-wp)};
+  });
+  const c=[['CLIENT REPORT (as on '+fd(asof)+')'],['Client','Address','Site','Vendor bills','Labour wages','Other expenses','Total cost','Billed to client (incl. GST)','of which GST','Received','Balance receivable','Payable outstanding']];
+  const K=['cost','bil','rec','recv','pay'];
+  const thead='<thead><tr><th>Site</th><th class="r">Total cost</th><th class="r">Billed to client</th><th class="r">Received</th><th class="r">Balance receivable</th><th class="r">Payable outstanding</th></tr></thead>';
+  const bc=grp(rows,r=>r.cn);let h='';
+  Object.keys(bc).sort((a,b)=>(a==='Unassigned')-(b==='Unassigned')||a.localeCompare(b)).forEach(cn=>{
+    const L=bc[cn].sort((a,b)=>a.s.localeCompare(b.s)),addr=(L.find(r=>r.addr)||{}).addr||'',tot=sum(L,r=>r.recv);
+    let body='';
+    L.forEach(r=>{
+      body+=`<tr class="vr"><td>${siteName(r.s)}</td>${K.map(k=>`<td class="r${k==='recv'?' warn':''}">${k==='recv'?'<b>'+fr(r[k])+'</b>':fr(r[k])}</td>`).join('')}</tr>`;
+      if(det)r.ib.forEach(x=>{body+=`<tr class="br"><td>Bill ${esc(x.b.no||'–')} · ${fd(x.b.date)}${x.b.due?' · due '+fd(x.b.due):''}${gstOf(x.b)>0?' · incl. GST '+fr(gstOf(x.b)):''}</td><td></td><td class="r">${fr(x.b.amt)}</td><td class="r">${fr(x.paid)}</td><td class="r">${fr(x.bal)}</td><td></td></tr>`});
+      c.push([cn,r.addr,r.s,r.ba,r.wa,r.xe,r.cost,r.bil,r.bgst,r.rec,r.recv,r.pay]);
+    });
+    body+=`<tr class="tot"><td>Total — ${esc(cn)}</td>${K.map(k=>`<td class="r">${fr(sum(L,r=>r[k]))}</td>`).join('')}</tr>`;
+    h+=card(esc(cn)+(addr?` <small class="mut" style="font-weight:600">· ${esc(addr)}</small>`:''),tot,thead,body,'Receivable');
+  });
+  if(Object.keys(bc).length>1)h+=card('Grand total — all clients',null,thead,`<tr class="tot"><td>Total</td>${K.map(k=>`<td class="r">${fr(sum(rows,r=>r[k]))}</td>`).join('')}</tr>`);
+  if(h)h+='<p class="mut" style="font-size:12px;margin:-6px 0 0">Total cost = vendor bills + labour wages + other expenses. Balance receivable = billed to client − received (negative means an advance received). Payable outstanding = vendor bills and wages still unpaid. Tick “Show bill-wise detail” to list each client bill with the amount received against it.</p>';
+  return{h:h||'<div class="card empty">No client or site data for the selected filters.</div>',out:sum(rows,r=>r.recv),c};
+}
+
+function expRep(asof,siteOk,det){
+  const X=DB.exps.filter(x=>x.date<=asof&&siteOk(x.site));
+  const c=[['EXPENSE REPORT — OTHER PROJECT EXPENSES (as on '+fd(asof)+')'],['Site','Client','Date','Major head','Category','Description','Paid to','Mode','Reference','Amount']];
+  X.slice().sort((a,b)=>(a.site||'').localeCompare(b.site||'')||a.cat.localeCompare(b.cat)||a.date.localeCompare(b.date)).forEach(x=>c.push([x.site||'',clientOf(x.site),fd(x.date),majorOf(x),x.cat,x.desc||'',x.to||'',x.mode||'',x.ref||'',x.amt]));
+  const bs=grp(X,x=>x.site||'');let h='';
+  const thead='<thead><tr><th>Category</th><th class="r">Entries</th><th class="r">Amount</th></tr></thead>';
+  Object.keys(bs).sort((a,b)=>a.localeCompare(b)).forEach(s=>{
+    const SL=bs[s],bc=grp(SL,x=>x.cat);let body='';
+    Object.keys(bc).map(k=>({k,L:bc[k],a:sum(bc[k],x=>x.amt)})).sort((a,b)=>b.a-a.a).forEach(o=>{
+      body+=`<tr class="vr"><td>${esc(o.k)}</td><td class="r">${o.L.length}</td><td class="r">${fr(o.a)}</td></tr>`;
+      if(det)o.L.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>{body+=`<tr class="br"><td>${fd(x.date)}${x.desc?' · '+esc(x.desc):''}${x.to?' · '+esc(x.to):''}${x.mode?' · '+esc(x.mode):''}</td><td></td><td class="r">${fr(x.amt)}</td></tr>`});
+    });
+    body+=`<tr class="tot"><td>Total — ${siteName(s)}</td><td class="r">${SL.length}</td><td class="r">${fr(sum(SL,x=>x.amt))}</td></tr>`;
+    h+=card(siteHead(s),sum(SL,x=>x.amt),thead,body);
+  });
+  if(Object.keys(bs).length>1)h+=card('Grand total',null,thead,`<tr class="tot"><td>All sites</td><td class="r">${X.length}</td><td class="r">${fr(sum(X,x=>x.amt))}</td></tr>`);
+  return{h:h||'<div class="card empty">No other expenses for the selected filters.</div>',out:sum(X,x=>x.amt),c};
+}
+
+function rep(){
+  const asof=$('#r-asof').value||today(),ty=$('#r-type').value||'vendor',vw=$('#r-view').value||'entity',fe=$('#r-ent').value,fsite=$('#r-site').value,fcl=$('#r-cl').value,det=$('#r-det').checked;
+  $('#r-vw').hidden=!(ty==='vendor'||ty==='all');
+  const clSites=fcl?DB.clients.filter(c=>c.name===fcl).map(c=>c.site.toLowerCase()):null;
+  const siteOk=s=>(!fsite||s===fsite)&&(!clSites||clSites.includes((s||'').toLowerCase()));
+  const show=t=>ty===t||ty==='all';
+  const V=vendorRep(asof,fe,siteOk,det,vw),Lb=labourRep(asof,siteOk,det);
+  const make={vendor:()=>V,labour:()=>Lb,due:()=>dueRep(asof,fe,siteOk),cons:()=>consRep(asof,fe,siteOk),client:()=>clientRep(asof,fe,siteOk,det),exp:()=>expRep(asof,siteOk,det)};
+  const title={vendor:'Vendor Outstanding Report — '+(vw==='site'?'Site-wise':'Entity-wise'),labour:'Worker / Labour Report',due:'Due Report',cons:'Site-wise Consolidated Report',client:'Client Report',exp:'Expense Report'};
+  CSV=[];let body='';
+  ['vendor','labour','due','cons','client','exp'].filter(show).forEach((k,i)=>{
+    const r=make[k]();if(i)CSV.push([]);CSV.push(...r.c);
+    body+=`<div class="rt">${title[k]}</div>`+r.h;
+  });
+  const gen=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+  setGen('Generated on '+gen+' · Bills & Wages Ledger · Report as on '+fd(asof));$('#rep').innerHTML=`<div class="rhead">As on ${fd(asof)}${fcl?' · Client: '+esc(fcl):''}${fsite?' · Site: '+esc(fsite):''}${fe?' · Entity: '+esc(fe):''} · Amounts in ₹</div>
+  <div class="cards"><div class="kc"><small>Vendor bills outstanding</small><b class="warn">${fm(V.out)}</b></div><div class="kc"><small>Labour wages outstanding</small><b class="warn">${fm(Lb.out)}</b></div><div class="kc"><small>Total payable</small><b>${fm(V.out+Lb.out)}</b></div></div>`
+  +body+`<div class="gen">Generated on ${gen} · Bills &amp; Wages Ledger · Report as on ${fd(asof)}</div>`;
+}
+$('#r-csv').onclick=()=>{
+  rep();
+  const t=CSV.map(r=>r.map(v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'}));a.download='report-'+($('#r-type').value||'vendor')+'-'+($('#r-asof').value||today())+'.csv';a.click();
+};
+function loadPdfLib(){
+  return window.html2pdf?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)});
+}
+function exportPdf(srcSel,name,cls){
+  toast('Preparing PDF…');
+  loadPdfLib().then(()=>{
+    let root=document.getElementById('pdfroot');if(root)root.remove();
+    root=document.createElement('div');root.id='pdfroot';root.className=cls||'';root.innerHTML=$(srcSel).innerHTML;
+    const foot=window.GENTXT||'';
+    return html2pdf().set({margin:[10,10,14,10],filename:name,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr','.kc']}})
+      .from(root).toPdf().get('pdf').then(pdf=>{
+        const N=pdf.internal.getNumberOfPages();
+        for(let i=1;i<=N;i++){pdf.setPage(i);pdf.setFontSize(8);pdf.setTextColor(68,68,68);pdf.text(foot.replace(/[^\x20-\xFF]/g,'-'),10,290,{maxWidth:150});pdf.text('Page '+i+' of '+N,200,290,{align:'right'})}
+      }).save().then(()=>{root.remove();toast('PDF downloaded')});
+  }).catch(()=>{const r=document.getElementById('pdfroot');if(r)r.remove();alert('Could not create the PDF. The PDF tool is loaded from the internet, so please check your connection. The print dialog will open instead; choose "Save as PDF" there.');print()});
+}
+$('#r-pdf').onclick=()=>{rep();exportPdf('#rep','report-'+($('#r-type').value||'vendor')+'-'+($('#r-asof').value||today())+'.pdf','')};
+$('#r-print').onclick=()=>{rep();print()};
+
+/* ---------- cloud: same Firebase project and account as the separate Attendance & Payroll app ---------- */
+const FB={apiKey:'AIzaSyA6KyIT7mbQH4OGnIjVdc0bcuW98O7mEBM',authDomain:'payroll-5a1b1.firebaseapp.com',projectId:'payroll-5a1b1',appId:'1:745508040722:web:fdbe005b07ef715f3f68cb'};
+const fbOK=!!window.firebase&&/^https?:$/.test(location.protocol);
+let fauth=null,fdb=null,sizeWarned=false;
+const setCloud=t=>{const e=$('#cloud-st');if(e)e.textContent=t};
+const cref=()=>fdb.collection('app_state').doc(FBU.uid);
+const cstr=o=>JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((r,x)=>(r[x]=v[x],r),{}):v);
+const strip=o=>{const c={...o};delete c._u;return c};
+const hasData=()=>['ents','clients','bills','wages','pays','exps','rcpts','ibills'].some(k=>(DB[k]||[]).length);
+async function zip(str){
+  if(!window.CompressionStream)return null;
+  const buf=await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+  const u=new Uint8Array(buf);let b='';for(let i=0;i<u.length;i+=0x8000)b+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(b);
+}
+async function unzip(b64){
+  const bin=atob(b64),u=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  return await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+}
+const readCloud=async c=>c.ledgerZ?await unzip(c.ledgerZ):(c.ledger||null);
+function updSide(){
+  const b=$('#cloud-btn');if(!b)return;
+  if(!fbOK){b.hidden=true;return}
+  b.hidden=false;b.textContent=FBU?'Sign out':'Sign in';
+  if(!FBU)setCloud('Not signed in. Data is on this device only.');
+}
+function applyCloud(j,cu){
+  const d=JSON.parse(j);
+  DB={ents:[],clients:[],bills:[],wages:[],pays:[],exps:[],rcpts:[],ibills:[],cb:{cash:0,bank:0,date:''},...d};
+  ensureHeads();DB._u=cu;lastSync=cu;DIRTY=false;
+  try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}
+  fill();tab(curTab);setCloud('✓ Synced to cloud');
+}
+async function pushNow(force){
+  if(!FBU||LDENIED)return;
+  if(!force){
+    const d=await cref().get(),c=d.exists?d.data():{},cu=c.ledgerUpdated||0;
+    if(cu>lastSync&&confirm('The ledger was changed from another device after this page was opened.\n\nOK = load the newer cloud copy (changes made here since then are lost).\nCancel = keep this device\'s copy and overwrite the cloud.')){applyCloud(await readCloud(c),cu);return}
+  }
+  const upd=DB._u||Date.now(),j=JSON.stringify(DB),z=await zip(j),FV=firebase.firestore.FieldValue;
+  const body=z?{ledgerZ:z,ledger:FV.delete(),ledgerUpdated:upd}:{ledger:j,ledgerZ:FV.delete(),ledgerUpdated:upd};
+  if((z||j).length>900000&&!sizeWarned){sizeWarned=true;alert('The ledger is close to the cloud size limit (about 1 MB, shared with payroll). Please download a backup and archive old data soon.')}
+  await cref().set(body,{merge:true});
+  lastSync=upd;DIRTY=false;setCloud('✓ Synced to cloud');
+}
+function cloudPush(){
+  DIRTY=true;if(!FBU||LDENIED)return;
+  setCloud('Saving…');clearTimeout(fbT);
+  fbT=setTimeout(async()=>{try{await pushNow(false)}catch(e){setCloud('⚠ Not synced - check connection')}},800);
+}
+async function cloudInit(u){
+  FBU=u;$('#cl-login').hidden=true;updSide();setCloud('Connecting…');
+  try{
+    const d=await cref().get();LDENIED=false;
+    const c=d.exists?d.data():{},cj=await readCloud(c),cu=c.ledgerUpdated||0,lu=DB._u||0;
+    if(cj==null){lastSync=0;if(hasData())await pushNow(true);else setCloud('✓ Synced to cloud')}
+    else if(!hasData())applyCloud(cj,cu);
+    else if(cstr(strip(JSON.parse(cj)))===cstr(strip(DB))){lastSync=cu;DB._u=cu;DIRTY=false;setCloud('✓ Synced to cloud')}
+    else{
+      const f=t=>t?new Date(t).toLocaleString('en-GB'):'unknown';
+      if(confirm('Ledger data exists in the cloud (saved '+f(cu)+') and on this device (saved '+f(lu)+').\n\nOK = use the cloud copy (replaces the data on this device).\nCancel = use this device\'s data and overwrite the cloud.'))applyCloud(cj,cu);
+      else{lastSync=cu;DB._u=Date.now();await pushNow(true)}
+    }
+  }catch(e){
+    if(e&&e.code==='permission-denied'){LDENIED=true;setCloud('No ledger access for this account');alert('This account does not have access to the ledger. Please sign in with another account.');fauth.signOut()}
+    else setCloud('⚠ Could not load cloud data')
+  }
+}
+function appSignOut(){
+  if(DIRTY&&!confirm('Some ledger changes have not reached the cloud yet. Sign out anyway?'))return;
+  fauth.signOut().then(()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+}
+function cloudBoot(){
+  updSide();
+  if(!fbOK){setCloud(window.firebase?'Cloud is off: open this page from its web address (https), not as a file.':'Cloud is off: the cloud library could not load (check internet).');return}
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(FB);
+    fauth=firebase.auth();fdb=firebase.firestore();
+    
+    fauth.onAuthStateChanged(u=>{if(u)cloudInit(u);else{FBU=null;updSide();if(!NOCLOUD)$('#cl-login').hidden=false}});
+  }catch(e){setCloud('Cloud is off: '+(e.code||e.message))}
+}
+$('#cl-go').onclick=async()=>{
+  $('#cl-err').textContent='';const e=$('#cl-em').value.trim(),p=$('#cl-pw').value;
+  if(!e||!p){$('#cl-err').textContent='Enter your email and password.';return}
+  try{await fauth.signInWithEmailAndPassword(e,p)}
+  catch(x){$('#cl-err').textContent=/invalid-credential|wrong-password|user-not-found|invalid-email/.test(x.code||'')?'Wrong email or password.':'Sign in failed: '+(x.code||x.message)}
+};
+$('#cl-pw').onkeydown=ev=>{if(ev.key==='Enter')$('#cl-go').click()};
+$('#cl-gg').onclick=async()=>{$('#cl-err').textContent='';try{await fauth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(x){$('#cl-err').textContent='Sign in failed: '+(x.code||x.message)}};
+$('#cl-skip').onclick=()=>{NOCLOUD=true;$('#cl-login').hidden=true;updSide()};
+$('#cloud-btn').onclick=()=>{if(FBU)appSignOut();else{NOCLOUD=false;$('#cl-login').hidden=false}};
+
+/* ---------- events ---------- */
+function tab(t){
+  curTab=t;
+  $$('section').forEach(s=>s.hidden=s.id!=='t-'+t);
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  const T={cl:['Clients & Sites','Add client name, address and site — sites feed the Site dropdowns in the other tabs'],bills:['Vendor Bills','Enter bills (not item-wise) under each entity and site'],wages:['Site Wages','Add workers\' wages site-wise'],pay:['Payments','Record payments to vendors and workers — applied to the oldest dues first'],exp:['Other Expenses','Other expenses incurred in project execution, site-wise'],hd:['Heads','Add and manage the heads and major heads used for expenses and the consolidated report'],ib:['Client Bills','Bills raised to clients, site-wise'],rc:['Receipts','Money received from clients, site-wise'],cb:['Cash Book','Date-wise money in and out with running balance'],rep:['Reports','Vendor outstanding, worker / labour, due, site-wise consolidated, client and expense reports']}[t];$('#h1').textContent=T[0];$('#hp').textContent=T[1];
+  if(t==='cl')rClients();if(t==='bills')rBills();if(t==='wages')rWages();if(t==='pay'){payFill();rPays()}if(t==='exp')rExps();if(t==='hd')rHeads();if(t==='ib')rIb();if(t==='rc')rRc();if(t==='cb'){cbLoad();cbRep()}if(t==='rep')rep();
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,id=t.dataset.id;
+  if(a==='tab')tab(t.dataset.t);
+  if(a==='cedit')editClient(id);
+  if(a==='cdel'&&confirm('Delete this client / site? Existing bills, wages, expenses and receipts stay, but are no longer linked to a client.')){DB.clients=DB.clients.filter(c=>c.id!==id);save();fill();rClients()}
+  if(a==='bedit')editBill(id);
+  if(a==='bdel'&&confirm('Delete this bill and any payments applied to it?')){DB.bills=DB.bills.filter(b=>b.id!==id);cleanPays();save();fill();rBills()}
+  if(a==='wedit')editWage(id);
+  if(a==='wdel'&&confirm('Delete this wage entry and any payments applied to it?')){DB.wages=DB.wages.filter(w=>w.id!==id);cleanPays();save();fill();rWages()}
+  if(a==='xedit')editExp(id);
+  if(a==='xdel'&&confirm('Delete this expense?')){DB.exps=DB.exps.filter(x=>x.id!==id);save();fill();rExps()}
+  if(a==='rcedit')editRcpt(id);
+  if(a==='rcdel'&&confirm('Delete this receipt?')){DB.rcpts=DB.rcpts.filter(r=>r.id!==id);save();fill();rRc()}
+  if(a==='mjedit'){emj=+t.dataset.i;$('#mj-name').value=DB.majors[emj];$('#mj-save').textContent='Update major head';$('#mj-cancel').hidden=false;$('#mj-h').textContent='Edit major head';scrollTo({top:0,behavior:'smooth'})}
+  if(a==='mjdel'){const m=DB.majors[+t.dataset.i],k=DB.heads.filter(h=>h.major===m).length;
+    if(k)alert('"'+m+'" has '+k+' head'+(k>1?'s':'')+' under it. Move or delete them first.');
+    else if(confirm('Delete the major head "'+m+'"?')){DB.majors.splice(+t.dataset.i,1);save();clearMajor();fill();rHeads()}}
+  if(a==='hdedit'){const h=DB.heads.find(x=>x.id===id);ehd=id;$('#hd-name').value=h.name;$('#hd-maj').value=h.major;$('#hd-save').textContent='Update head';$('#hd-cancel').hidden=false;$('#hd-h').textContent='Edit head';scrollTo({top:0,behavior:'smooth'})}
+  if(a==='hddel'){const h=DB.heads.find(x=>x.id===id),k=DB.exps.filter(e=>nk(e.cat)===nk(h.name)).length;
+    if(k)alert('"'+h.name+'" is used in '+k+' expense entr'+(k>1?'ies':'y')+' and cannot be deleted. You can rename it or move it to another major head with Edit.');
+    else if(confirm('Delete the head "'+h.name+'"?')){DB.heads=DB.heads.filter(x=>x.id!==id);save();clearHead();fill();rHeads()}}
+  if(a==='ibedit')editIb(id);
+  if(a==='ibdel'&&confirm('Delete this client bill?')){DB.ibills=DB.ibills.filter(b=>b.id!==id);save();fill();rIb()}
+  if(a==='pdel'&&confirm('Delete this payment? The bills / wage entries it was applied to become outstanding again.')){
+    DB.bills.forEach(b=>{if(b.pay)b.pay=b.pay.filter(x=>x.pid!==id)});
+    DB.wages.forEach(w=>{if(w.pay)w.pay=w.pay.filter(x=>x.pid!==id)});
+    DB.pays=DB.pays.filter(p=>p.id!==id);save();payFill();rPays();
+  }
+  if(a==='lpdel'&&confirm('Delete this payment?')){const b=DB.bills.find(x=>x.id===id);b.pay.splice(+t.dataset.i,1);save();payFill();rPays()}
+  if(a==='lwdel'&&confirm('Clear the earlier paid amount on this wage entry?')){const w=DB.wages.find(x=>x.id===id);w.paid=0;save();payFill();rPays()}
+});
+$('#c-save').onclick=saveClient;$('#c-cancel').onclick=()=>clearClient();
+$('#b-save').onclick=saveBill;$('#b-cancel').onclick=()=>clearBill();
+$('#w-save').onclick=saveWage;$('#w-cancel').onclick=()=>clearWage();
+$('#x-save').onclick=saveExp;$('#x-cancel').onclick=()=>clearExp();
+$('#rc-save').onclick=saveRcpt;$('#rc-cancel').onclick=()=>clearRcpt();
+$('#rc-cl').onchange=()=>rcSites('');
+$('#mj-save').onclick=saveMajor;$('#mj-cancel').onclick=()=>clearMajor();$('#hd-save').onclick=saveHead;$('#hd-cancel').onclick=()=>clearHead();
+$('#ib-save').onclick=saveIb;$('#ib-cancel').onclick=()=>clearIb();$('#ib-cl').onchange=()=>ibSites('');
+$('#x-cat').onchange=()=>{const v=$('#x-cat').value;if(v===NEW){$('#x-cat').value='';$('#x-maj').value='';tab('hd');return}$('#x-maj').value=guessMajor(v)};
+$('#p-save').onclick=savePay;
+const setDue=()=>{const c=n($('#b-cd').value),d=$('#b-date').value;if(c>0&&d)$('#b-due').value=addDays(d,c)};
+$('#b-cd').oninput=setDue;$('#b-date').onchange=setDue;
+const setAmt=()=>{const d=n($('#w-days').value),r=n($('#w-rate').value);if(d>0&&r>0)$('#w-amt').value=r2(d*r)};
+$('#w-days').oninput=setAmt;$('#w-rate').oninput=setAmt;
+$('#c-q').oninput=rClients;
+['#p-type','#p-ent','#p-ven','#p-vsite','#p-wk','#p-wsite'].forEach(s=>$(s).onchange=()=>payFill(true));
+['#f-pt','#f-pq'].forEach(s=>$(s).oninput=rPays);
+['#f-ent','#f-bsite','#f-st','#f-q'].forEach(s=>$(s).oninput=rBills);
+['#f-site','#f-ws','#f-wq'].forEach(s=>$(s).oninput=rWages);
+['#f-xsite','#f-xcat','#f-xq'].forEach(s=>$(s).oninput=rExps);
+['#f-rcsite','#f-rcmode','#f-rcq'].forEach(s=>$(s).oninput=rRc);
+['#f-ibsite','#f-ibst','#f-ibq'].forEach(s=>$(s).oninput=rIb);
+['#cb-from','#cb-to','#cb-view'].forEach(s=>$(s).oninput=cbRep);
+['#r-type','#r-view','#r-asof','#r-ent','#r-site','#r-cl','#r-det'].forEach(s=>$(s).oninput=rep);
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:'application/json'}));a.download='bills-wages-backup-'+today()+'.json';a.click()};
+$('#imp').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  f.text().then(t=>{
+    const d=JSON.parse(t);if(!Array.isArray(d.bills)||!Array.isArray(d.wages))throw 0;
+    if(!confirm('Replace everything on this device with the backup ('+d.bills.length+' bills, '+d.wages.length+' wage entries)?'))return;
+    DB={ents:[],clients:[],bills:[],wages:[],pays:[],exps:[],rcpts:[],ibills:[],cb:{cash:0,bank:0,date:''},...d};ensureHeads();save();fill();tab('rep');toast('Backup restored');
+  }).catch(()=>alert('This file is not a valid backup.')).finally(()=>e.target.value='');
+};
+$('#b-date').value=today();$('#w-date').value=today();$('#r-asof').value=today();$('#p-date').value=today();$('#x-date').value=today();$('#rc-date').value=today();$('#ib-date').value=today();$('#cb-to').value=today();
+fill();tab(DB.clients.length?'rep':'cl');cloudBoot();
+</script>
+</body>
+</html>
